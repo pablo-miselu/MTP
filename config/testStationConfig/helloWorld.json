@@ -1,0 +1,24 @@
+{
+    "testSequenceID":"helloWorldSequenceID",
+    "testSuiteID":"helloWorldTestSuite",
+    "testSequence":[
+                    {"testName":"debugTest_pass","cycles":0},                    
+                    {"testName":"helloWorld_msgBox","cycles":1}
+                   ],
+    
+    "communicators":{
+      "Null0":{"commClassName":"GenericCommunicator","driverName":"NullDriver","driverConfigParams":{},"isDefault":true },
+      "Null1":{"commClassName":"GenericCommunicator","driverName":"NullDriver","driverConfigParams":{},"isDefault":false},
+      "Null2":{"commClassName":"GenericCommunicator","driverName":"NullDriver","driverConfigParams":{},"isDefault":false}
+    },
+    
+    "flags":{
+        "wholeCycles":1,
+        "isStopOnFail": true,
+        "isAutomaticSNdialog": false,
+        "isRouteControlEnable": false,
+        "isSkipBeginningRCcheck": false,
+        "logFileBufferSize":1024,
+        "isMemoryOnly": false
+    }
+}

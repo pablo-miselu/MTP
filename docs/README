@@ -1,0 +1,11 @@
+To generate the documentation run:
+ sphinx-build -b html <srcDirectory> <dstDirectory>
+
+For example, from this directory running:
+ sphinx-build -b html . html
+
+would create a subdirectory "html" containing the documentation.
+
+*IMPORTANT* For this to work you need:
+  -Have sphinx installed.
+  -The path to the MTP python package inside this repo included in your PYTHONPATH.
