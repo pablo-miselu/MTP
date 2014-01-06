@@ -76,37 +76,31 @@ class Sequencer:
         ###   End of init of object variables   ###
         
         
-        ###   Start of handle SN   ###
+        dependencyDict = {}
+        ###   Start of automatic SN's handle   ###
         if self.isAutomaticSNdialog:
+            
+            uutSNregex = self.routeController.getUutSNregex(self.testSequenceID)
             tt = None
             while tt==None:
                 self.guiApi.sendMessage({'command':'pDialog','msg':'SN for UUT','inputHeight':30})
                 t = self.guiApi.waitForDialogReturn()
-                tt = re.match('^.{3}$',t[1])
-            SN = t[1]
-        else:
-            #In this case the testcode should call configurationManager.setSN before the end of the test run
-            SN = 'placeHolderSN'
-        self.configurationManager.setSN(SN)
-        ###   End of handle SN   ###
-        
-        
-        dependencyDict = {}
-        if self.routeController.isStartNode(self.testSequenceID):
-            itemList = self.routeController.getDependencyList(self.testSequenceID)
-            for item in itemList:
-                if self.isAutomaticSNdialog:
-                    
+                tt = re.match(uutSNregex,t[1])
+            self.configurationManager.setSN(t[1])
+          
+            
+            if self.routeController.isStartNode(self.testSequenceID):
+                processDependencyList = self.routeController.getDependencyList(self.testSequenceID)
+                for processDependency in processDependencyList:
                     tt = None
                     while tt==None:
-                        self.guiApi.sendMessage({'command':'pDialog','msg':'SN for ' + item,'inputHeight':30})
+                        self.guiApi.sendMessage({'command':'pDialog','msg':'SN for ' + processDependency['name'],'inputHeight':30})
                         t = self.guiApi.waitForDialogReturn()
-                        tt = re.match('^.{3}$',t[1])
-                    dependencyDict[item] = t[1]
-                    
-                else:
-                    dependencyDict[item] = 'placeHolderSN'
-            self.configurationManager.setDependencyDict(dependencyDict)
+                        tt = re.match(processDependency['SNregex'],t[1])
+                    dependencyDict[processDependency['name']] = t[1]
+                self.configurationManager.setDependencyDict(dependencyDict)
+            
+        ###   End of automatic SN's handle   ###
         
         
         for commName, comm in self.configurationManager.configData['communicators'].items():
@@ -143,17 +137,18 @@ class Sequencer:
                 
               
                 if self.isMemoryOnly==False:
-                    self.testRunFolder = self.configurationManager.initTestRunFolder(SN,self.startTimestamp)
+                    self.testRunFolder = self.configurationManager.initTestRunFolder(self.startTimestamp)
                 
                 if self.routeControllerEnable and (not self.isSkipBeginningRCcheck):
-                   
-                        if self.routeController.isOkToTest(SN,self.testSequenceID,dependencyDict)!=True:
-                            self.guiApi.sendMessage({'command':'pDialog',
-                                                     'msg':'This unit is not routed to this station. Or a subcomponent has not been tested'
-                                                    })
-                            self.guiApi.waitForDialogReturn()
-                            self.lastTestEntered = 'RoutingException'
-                            raise Exception ('RoutingException')
+
+                    SN = self.configurationManager.getSN()                   
+                    if self.routeController.isOkToTest(SN,self.testSequenceID,dependencyDict)!=True:
+                        self.guiApi.sendMessage({'command':'pDialog',
+                                                 'msg':'This unit is not routed to this station. Or a subcomponent has not been tested'
+                                                })
+                        self.guiApi.waitForDialogReturn()
+                        self.lastTestEntered = 'RoutingException'
+                        raise Exception ('RoutingException')
                
                 try:
                     self.commDict = self.configurationManager.initCommunicators()
@@ -256,7 +251,7 @@ class Sequencer:
                     self.dependencyDict = self.configurationManager.getDependencyDict()
                     
                     self.fileDictionary = {}
-                    for pointerID, fileRelativePath in self.fileDictionary.iteritems():
+                    for pointerID, fileRelativePath in self.filePointerDictionary.iteritems():
                         fileFullPath = os.path.join(self.testRunFolder,fileRelativePath)
                         fileData = pUtils.quickFileRead(fileFullPath,'rb')
                         self.fileDictionary[pointerID] = pUtils.pPack(fileData)

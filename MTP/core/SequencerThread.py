@@ -47,27 +47,34 @@ class SequencerThread (threading.Thread):
         """
         configRoot = os.path.join(os.environ['MTP_TESTSTATION'],'MTP','config')
         
-        siteIDfileFullPath = os.path.join(configRoot,'siteID.cfg')
-        testStationConfigFileFullPath = os.path.join(configRoot,'testStationConfig',sys.argv[1])
-        limitFileFullPath = os.path.join(configRoot,'limits',sys.argv[2])
-        dbConfigFileFullPath = os.path.join(configRoot,'database',sys.argv[3])
-        routeControlProcessRoot = os.path.join(configRoot,'routeControl','processes',sys.argv[4])
+        configWorkspace = sys.argv[2]
+        testStationConfigFileFullPath = os.path.join(configRoot,configWorkspace,'testStationConfig',sys.argv[3])
+        limitFileFullPath = os.path.join(configRoot,configWorkspace,'limits',sys.argv[4])
+        dbConfigFileFullPath = os.path.join(configRoot,configWorkspace,'database',sys.argv[5])
         
-        siteID = pUtils.quickFileRead(siteIDfileFullPath)
+        siteID = sys.argv[1]
         configData = json.loads(pUtils.quickFileRead(testStationConfigFileFullPath))
         limitDict = json.loads(pUtils.quickFileRead(limitFileFullPath))
         dbConfig =  json.loads(pUtils.quickFileRead(dbConfigFileFullPath))
-        
-        processDict = {}
-        routeControlLookUp = {}
-        for fileName in os.listdir(routeControlProcessRoot):
-            fileFullPath = os.path.join(routeControlProcessRoot,fileName)
-            data = json.loads(pUtils.quickFileRead(fileFullPath))
+     
+     
+        if len(sys.argv)>6: 
+            routeControlProcessRoot = os.path.join(configRoot,configWorkspace,'routeControl','processes',sys.argv[6])
+            processDict = {}
+            routeControlLookUp = {}
+            for fileName in os.listdir(routeControlProcessRoot):
+                fileFullPath = os.path.join(routeControlProcessRoot,fileName)
+                data = json.loads(pUtils.quickFileRead(fileFullPath))
+                
+                processID = fileName.split('.')[0]
+                processDict[processID] = data
+                for node in data['transitionDict']:
+                    routeControlLookUp[node] = processID
             
-            processID = fileName.split('.')[0]
-            processDict[processID] = data
-            for node in data['transitionDict']:
-                routeControlLookUp[node] = processID
-        
-        Sequencer(siteID,configData,limitDict,dbConfig,(processDict,routeControlLookUp),self.guiApi)
+            Sequencer(siteID,configData,limitDict,dbConfig,(processDict,routeControlLookUp),self.guiApi)
+        else:
+            Sequencer(siteID,configData,limitDict,dbConfig,(),self.guiApi)
+       
+            
         self.guiApi.sendMessage({'command':'initLayout'})
+        

@@ -1,5 +1,7 @@
 {
+    "uutSNregex":"^.{4}$",
     "startNode":"helloWorldSequenceID",
     "transitionDict":{"helloWorldSequenceID":"END"},
-    "dependencies":[]
+    "dependencies":[],
+    "pretested":[]
 }

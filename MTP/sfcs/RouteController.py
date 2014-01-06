@@ -34,8 +34,9 @@ class RouteController:
     """
 
     def __init__(self,rcData,dbApi):
-        self.processDict = rcData[0]
-        self.lookUp = rcData[1]
+        if rcData!=():
+            self.processDict = rcData[0]
+            self.lookUp = rcData[1]
         self.dbApi = dbApi
         
     
@@ -60,14 +61,14 @@ class RouteController:
                
         if nextTestSequenceID==None and process['startNode']==testSequenceID:
             
-            for depProcessID in process['dependencies']:
+            for dependency in process['dependencies']:
                  
-                try: depSN = dependencyDict[depProcessID]
+                try: depSN = dependencyDict[dependency['name']]
                 except:
                     return False #maybe add more error info here
                 
-                if depProcessID in process['preTested']:continue
-                if self.dbApi.getNextTestSequenceID(depSN,depProcessID)!='END':
+                if dependency['name'] in process['preTested']:continue
+                if self.dbApi.getNextTestSequenceID(depSN,dependency['name'])!='END':
                     return False
             
             
@@ -168,7 +169,7 @@ class RouteController:
         
         Args:
         
-        * testSequenceID (str): The testSequenceID of which teh dependencies are desired
+        * testSequenceID (str): The testSequenceID of which the dependencies are desired
         
         Returns:
             A list with the dependencies.
@@ -176,6 +177,21 @@ class RouteController:
         processID = self.getProcessID(testSequenceID)
         process = self.processDict[processID]
         return process['dependencies']
+    
+    def getUutSNregex(self,testSequenceID):
+        """
+        Gets the regular expression that defines the format that the SN for the uut should have.
+        
+        Args:
+        
+        * testSequenceID (str): The testSequenceID of which the uutSNregex is desired
+        
+        Returns:
+            A string with the uutSNregex.
+        """
+        processID = self.getProcessID(testSequenceID)
+        process = self.processDict[processID]
+        return process['uutSNregex']
     
     def isStartNode(self,testSequenceID):
         """

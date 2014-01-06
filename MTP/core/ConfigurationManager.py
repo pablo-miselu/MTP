@@ -85,14 +85,15 @@ class ConfigurationManager:
         return self.commDict
      
 
-    def initTestRunFolder(self,SN,startTimestamp):
+    def initTestRunFolder(self,startTimestamp):
         """
         | Creates the directory to be used for the test run.
+        | It uses the value of self.SN .
         | The full path remains stored as an object variable.
+        
         
         Args:
             
-        * SN (str): The serial number
         * startTimestamp (str): The timestamp from the start of the test
         
         Returns:
@@ -102,10 +103,9 @@ class ConfigurationManager:
         
         if self.getIsMemoryOnly():
             raise Exception('Attempting to create TestRunFolder while isMemoryOnly flag is set')
-        self.SN = SN
         self.uuid = uuid.uuid4()
         testSequenceID = self.configData['testSequenceID']
-        self.testRunFolderName = testSequenceID+'_'+startTimestamp+'_'+SN+'_'+str(self.uuid)
+        self.testRunFolderName = testSequenceID+'_'+startTimestamp+'_'+self.SN+'_'+str(self.uuid)
         print 'testRunFolderName='+self.testRunFolderName
         self.testRunFolderFullPath = os.path.join(self.getTestStationRootFolder(),'TestRunDataStorage',self.testRunFolderName)
         
