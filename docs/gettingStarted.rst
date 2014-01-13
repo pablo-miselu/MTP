@@ -7,7 +7,7 @@ Dependencies
 ------------
 * **python 2.7.x**
     * pyserial
-    * pyQT4
+    * PySide
     * psycopg2
     
 * **postgresql 9.x** (http://www.postgresql.org)

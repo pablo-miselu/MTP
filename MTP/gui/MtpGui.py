@@ -15,7 +15,7 @@
 
 from MTP.core.SequencerThread import SequencerThread
 
-from PyQt4 import QtGui, QtCore
+from PySide import QtGui, QtCore
 
 import Queue
 import os
@@ -23,7 +23,7 @@ import os
 
 class MtpGui(QtGui.QWidget):
     """
-    | Takes care of providing a simple graphical user interface using PyQT.
+    | Takes care of providing a simple graphical user interface.
     """
     def __init__(self, parent=None):
         super(MtpGui, self).__init__(parent)
@@ -323,7 +323,7 @@ class Window_pDialog(QtGui.QDialog):
         None, data retrieval is done through the *guiApi*
     """
     
-    def __init__(self,queue,parent,msg=None,title='',inputHeight=None,buttonTextList = ['OK'],defaultButtonText=None,sizeX=300,sizeY=200,imageFileName=None,language=None):
+    def __init__(self,queue,parent,msg=None,title=' ',inputHeight=None,buttonTextList = ['OK'],defaultButtonText=None,sizeX=300,sizeY=200,imageFileName=None,language=None):
         super(Window_pDialog, self).__init__(parent=None)
 
         ###   Object variables   ###
