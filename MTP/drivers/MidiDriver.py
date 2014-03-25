@@ -42,7 +42,7 @@ class MidiDriver:
         os.write(self.conn,data)
 
     
-    def receive(self):
+    def receive(self,bytesToRead):
         """
         Receives all available the data, at the time of the function call, from the midi device.
         
@@ -53,7 +53,7 @@ class MidiDriver:
             A bytearray containing the bytes read
         """
         try:
-            return bytearray (os.read(self.conn,999))
+            return bytearray (os.read(self.conn,bytesToRead))
         except:
             return bytearray()
     

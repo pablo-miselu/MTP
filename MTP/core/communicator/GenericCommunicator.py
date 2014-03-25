@@ -31,28 +31,54 @@ class GenericCommunicator(object):
     
     * Initialices buffers and other object variables
     * Creates locks for the variables shared amongst threads
+    
+    Args:
+        * commInstanceID (str): The ID of this communicator instance
+        * configurationManager (variable): Two options for this parameter:
+            * A MTP.core.ConfigurationManager.ConfigurationManager object
+                or
+            * A dictionary with all the parameters required, this is to facilitate the use of a communicator on "not so standard" uses of it (e.g. independant command line tools)
     """
 
     def __init__(self,commInstanceID,configurationManager):
-
+      
         self.parseBuffer = ''
         self.logFileBuffer = ''
-        self.consoleBuffer = ''
    
         self.commInstanceID = commInstanceID
-        self.configurationManager = configurationManager
-        self.guiApi = self.configurationManager.getGuiApi()
-        driverName = self.configurationManager.getDriverName(commInstanceID)
-        driverConfigParams = self.configurationManager.getDriverConfigParams(commInstanceID)
-  
-        self.logFileBufferLock = threading.Lock()
-        self.consoleBufferLock = threading.Lock()
-        self.parseBufferLock = threading.Lock()
         
+        ###   Start of handling of different instance types for configurationManager   ###
+        if isinstance(configurationManager,dict):
+        
+            self.guiApi = None
+            self.logFileBufferSize = configurationManager['logFileBufferSize']
+            self.isMemoryOnly = configurationManager['isMemoryOnly']
+            self.testRunFolder = configurationManager['testRunFolder']            
+            
+            driverName = configurationManager['driverName']
+            driverConfigParams = configurationManager['driverConfigParams']
+            interval = configurationManager['interval']
+        
+        else:
+            
+            self.configurationManager = configurationManager
+            self.guiApi = self.configurationManager.getGuiApi()
+            self.logFileBufferSize = self.configurationManager.getLogFileBufferSize()
+            self.isMemoryOnly = self.configurationManager.getIsMemoryOnly()
+            self.testRunFolder = self.configurationManager.getTestRunFolder()                                     
+            driverName = self.configurationManager.getDriverName(commInstanceID)
+            driverConfigParams = self.configurationManager.getDriverConfigParams(commInstanceID)
+            #interval = self.configurationManager.geInterval(commInstanceID)
+        ###   End of handling of different instance types for configurationMAnager   ###    
+
         exec('from MTP.drivers.%s import %s' % (driverName,driverName))
         exec('self.driver = '+driverName+'(**driverConfigParams)')
 
-        self.launchPollingThread()
+        self.logFileBufferLock = threading.Lock()
+        self.parseBufferLock = threading.Lock()
+            
+        self.launchPollingThread(interval)
+        
 
 
     def log (self,msg,logLevel):
@@ -69,10 +95,10 @@ class GenericCommunicator(object):
         """
         
         logMessage = self.formatLogMessage(msg,logLevel)
-        
         self.updateLogFileBuffer(logMessage)
         self.updateConsoleBuffer(logMessage)
-        self.guiApi.sendMessage({'command':'processEvents'})
+        if self.guiApi:
+            self.guiApi.sendMessage({'command':'processEvents'})
         
     
     def communicate(self,msg,regex,timeout):
@@ -148,7 +174,9 @@ class GenericCommunicator(object):
         
     def close(self):
         """
-        | Closes the connection
+        | Closes the connection.
+        |  Stops the polling thread.
+        |  Flushes the log buffer.
         
         Args:
             None
@@ -156,8 +184,9 @@ class GenericCommunicator(object):
         Returns:
             None
         """
-        self.driver.close()
-    
+        self.endPollingThread()
+        self.flushLogFileBuffer()
+        
     
     def formatLogMessage(self,msg,logLevel):
         """
@@ -190,16 +219,21 @@ class GenericCommunicator(object):
             None
         """
         
-        logFileBufferSize = self.configurationManager.getLogFileBufferSize()
+        
         
         with self.logFileBufferLock:
             
             self.logFileBuffer += str(data)
             
-            if self.configurationManager.getIsMemoryOnly()==False:
+            if self.isMemoryOnly==False:
         
-                if len(self.logFileBuffer)>logFileBufferSize or forceFlush==True:
-                    logFileFullPath = os.path.join(self.configurationManager.getTestRunFolder(),'log',self.commInstanceID+'.log')
+                if len(self.logFileBuffer)>self.logFileBufferSize or forceFlush==True:
+                    
+                    logFileFolderFullPath = os.path.join(self.testRunFolder,'log')
+                    if not os.path.exists(logFileFolderFullPath):
+                        pUtils.createDirectory(logFileFolderFullPath)
+                    
+                    logFileFullPath = os.path.join(logFileFolderFullPath,self.commInstanceID+'.log')
                     pUtils.quickFileWrite(logFileFullPath,self.logFileBuffer,'at')
                     self.logFileBuffer = ''
     
@@ -231,10 +265,13 @@ class GenericCommunicator(object):
             None
         """
         
-        self.guiApi.sendMessage({'command':'consoleWrite',
-                                'consoleID':self.commInstanceID,
-                                'text':data,
-                                })
+        if self.guiApi: 
+            self.guiApi.sendMessage({'command':'consoleWrite',
+                                    'consoleID':self.commInstanceID,
+                                    'text':data,
+                                    })
+        else:
+            sys.stdout.write(data)
 
 
     def flushLogFileBuffer(self):
@@ -286,7 +323,7 @@ class GenericCommunicator(object):
         self.updateLogFileBuffer(data)
         
         
-    def launchPollingThread(self):
+    def launchPollingThread(self,interval=1):
         """
         | Instantiates and start a pollingThread (see :ref:`label_PollingThread`).
         
@@ -296,9 +333,8 @@ class GenericCommunicator(object):
         Returns:
             None
         """
-        
-        self.log('Launching GenericCommunicator pollingThread',1)
-        self.pollingThread = PollingThread(self.pollingFunction,1)
+        self.log('Launching Communicator pollingThread',1)
+        self.pollingThread = PollingThread(self.pollingFunction,interval)
         self.pollingThread.start()
         
             
@@ -343,6 +379,5 @@ class GenericCommunicator(object):
             None
         """
         
-        self.pollingThread.endThread()
         self.pollingThread.join()
         self.driver.close()
