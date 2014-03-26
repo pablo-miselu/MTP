@@ -29,9 +29,9 @@ from MTP.core.PollingThread import PollingThread
 MIDI_MISELU_MFG_ID = '\x00\x02\x00'
 MIDI_MISELU_MIDI_PROCESSOR = '\x00'
 
-class C24_MidiCommunicator(GenericCommunicator):
+class PacketCommunicator(GenericCommunicator):
     """
-    A specialized midi communicator for the C24
+    A communicator to handle packets (e.g support of binary protocols)
     
     On init:
     
@@ -51,7 +51,7 @@ class C24_MidiCommunicator(GenericCommunicator):
         self.packetBuffer = []
         self.rawBufferLock = threading.Lock()  
         self.packetBufferLock = threading.Lock()  
-        super(C24_MidiCommunicator, self).__init__(commInstanceID,configurationManager)
+        super(PacketCommunicator, self).__init__(commInstanceID,configurationManager)
       
       
     def pollingFunction(self):
