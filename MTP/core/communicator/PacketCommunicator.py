@@ -70,7 +70,7 @@ class PacketCommunicator(GenericCommunicator):
         """
         
         #Read
-        data = self.driver.receive(999)
+        data = bytearray(self.driver.receive(999))
         
         #If new data, update buffers
         if len(data)>0:
@@ -100,17 +100,16 @@ class PacketCommunicator(GenericCommunicator):
         """
         
         timeAnchor = time.time()
-        r = re.compile(regex)
+        r = re.compile(regex,re.DOTALL)
         while(time.time()-timeAnchor<timeout):
-            with self.packetBufferLock:
-                
-                for i in range(len(self.packetBuffer)):
-                    t = r.match(self.packetBuffer[i])    
-                    if t!=None:
+            for i in range(len(self.packetBuffer)):
+                t = r.match(self.packetBuffer[i])    
+                if t!=None:
+                    with self.packetBufferLock:
                         self.packetBuffer.pop(i)
-                        return t
+                    return t
             sleep(interval)
-            
+        
         raise Exception('Communicator: Did not receive expected answer within timeout')
 
 

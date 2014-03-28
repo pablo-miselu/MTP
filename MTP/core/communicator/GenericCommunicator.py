@@ -53,11 +53,12 @@ class GenericCommunicator(object):
             self.guiApi = None
             self.logFileBufferSize = configurationManager['logFileBufferSize']
             self.isMemoryOnly = configurationManager['isMemoryOnly']
+            self.isPrintToConsole = configurationManager['isPrintToConsole']
             self.testRunFolder = configurationManager['testRunFolder']            
             
             driverName = configurationManager['driverName']
             driverConfigParams = configurationManager['driverConfigParams']
-            interval = configurationManager['interval']
+            pollingThreadInterval = configurationManager['pollingThreadInterval']            
         
         else:
             
@@ -68,7 +69,9 @@ class GenericCommunicator(object):
             self.testRunFolder = self.configurationManager.getTestRunFolder()                                     
             driverName = self.configurationManager.getDriverName(commInstanceID)
             driverConfigParams = self.configurationManager.getDriverConfigParams(commInstanceID)
-            #interval = self.configurationManager.geInterval(commInstanceID)
+            #pollingThreadInterval = self.configurationManager.geInterval(commInstanceID)
+            #self.isPrintToConsole = self.configurationManager.getIsPrintToConsole(commInstanceID)
+            
         ###   End of handling of different instance types for configurationMAnager   ###    
 
         exec('from MTP.drivers.%s import %s' % (driverName,driverName))
@@ -77,9 +80,8 @@ class GenericCommunicator(object):
         self.logFileBufferLock = threading.Lock()
         self.parseBufferLock = threading.Lock()
             
-        self.launchPollingThread(interval)
+        self.launchPollingThread(pollingThreadInterval)
         
-
 
     def log (self,msg,logLevel):
         """
@@ -270,7 +272,8 @@ class GenericCommunicator(object):
                                     'consoleID':self.commInstanceID,
                                     'text':data,
                                     })
-        else:
+        
+        elif self.isPrintToConsole:
             sys.stdout.write(data)
 
 
