@@ -69,6 +69,8 @@ class GenericCommunicator(object):
             self.testRunFolder = self.configurationManager.getTestRunFolder()                                     
             driverName = self.configurationManager.getDriverName(commInstanceID)
             driverConfigParams = self.configurationManager.getDriverConfigParams(commInstanceID)
+            
+            pollingThreadInterval = .05
             #pollingThreadInterval = self.configurationManager.geInterval(commInstanceID)
             #self.isPrintToConsole = self.configurationManager.getIsPrintToConsole(commInstanceID)
             
@@ -79,6 +81,7 @@ class GenericCommunicator(object):
 
         self.logFileBufferLock = threading.Lock()
         self.parseBufferLock = threading.Lock()
+        self.pollingThreadLock = threading.Lock()
             
         self.launchPollingThread(pollingThreadInterval)
         
@@ -171,7 +174,7 @@ class GenericCommunicator(object):
                     return t
             sleep(interval)
             
-        raise Exception('Communicator: Did not receive expected answer within timeout')
+        raise Exception('Communicator: Did not receive expected answer within timeout.regex='+str(regex))
     
         
     def close(self):
@@ -320,10 +323,11 @@ class GenericCommunicator(object):
             None
         """
         
-        data = self.driver.receive(999)
-        self.updateParseBuffer(data)
-        self.updateConsoleBuffer(data)
-        self.updateLogFileBuffer(data)
+        with self.pollingThreadLock:
+            data = self.driver.receive(999)
+            self.updateParseBuffer(data)
+            self.updateConsoleBuffer(data)
+            self.updateLogFileBuffer(data)
         
         
     def launchPollingThread(self,interval=1):

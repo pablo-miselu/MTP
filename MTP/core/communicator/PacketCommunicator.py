@@ -69,20 +69,38 @@ class PacketCommunicator(GenericCommunicator):
             None
         """
         
-        #Read
-        data = bytearray(self.driver.receive(999))
+        with self.pollingThreadLock:
+            #Read
+            data = self.driver.receive(999)
+            
+            #If new data, update buffers
+            if len(data)>0:
+                self.updateRawBuffer(data)
+            
+                displayData = pUtils.formatHex(data) + '\n'
+                self.updateConsoleBuffer(displayData)
+                self.updateLogFileBuffer(displayData)
+            
+            self.parsePackets()
+       
+    def transmit(self,msg):
+        """
+        | Logs msg in hex representation.
+        | Sends *msg*.
         
-        #If new data, update buffers
-        if len(data)>0:
-            self.updateRawBuffer(data)
+        Args:
         
-            displayData = ' '.join(['%0.2X'%byte for byte in data]) + '\n'
-            self.updateConsoleBuffer(displayData)
-            self.updateLogFileBuffer(displayData)
+        * msg (str): The string/message to send
+            
+        Returns:
+            None
+        """
         
-        self.parsePackets()
-   
-   
+        msgHex = ' '.join([('%0.2X'%byte) for byte in bytearray(msg)])
+        self.log('Transmitting.Hex=[ '+msgHex+' ]',0)
+        self.driver.transmit(msg)
+        
+        
     def receive(self,regex,timeout,interval=1):
         """
         | Waits until either there is a match of *regex* or until *timeout* seconds have passed.
@@ -110,7 +128,7 @@ class PacketCommunicator(GenericCommunicator):
                     return t
             sleep(interval)
         
-        raise Exception('Communicator: Did not receive expected answer within timeout')
+        raise Exception('Communicator: Did not receive expected answer within timeout. regex='+pUtils.formatHex(regex))
 
 
     def updateRawBuffer(self,data=None,bytesToRemove=None):
@@ -176,4 +194,4 @@ class PacketCommunicator(GenericCommunicator):
             None
         """
         with self.packetBufferLock:
-            self.packetBuffer = ''
+            self.packetBuffer = []
