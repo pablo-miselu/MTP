@@ -19,7 +19,8 @@ class SerialDriver:
     """
     | A driver for the serial port that simply wraps around the standard pyserial python module.
     
-    | On init it opens the connection.
+    | On init it stores the values passed as parameters and
+    | opens the connection.
     
     Args:
         This are the exact same that pyserial uses
@@ -31,11 +32,36 @@ class SerialDriver:
                  writeTimeout=None,dsrdtr=False,
                  interCharTimeout=None):
         
-        self.conn = serial.Serial  (port,baudrate,
-                                    bytesize,parity,stopbits,
-                                    timeout,xonxoff,rtscts,
-                                    writeTimeout,dsrdtr,
-                                    interCharTimeout)
+        self.data ={}
+        self.data['port'] = port
+        self.data['baudrate'] = baudrate
+        self.data['bytesize'] = bytesize
+        self.data['parity'] = parity
+        self.data['stopbits'] = stopbits
+        self.data['timeout'] = timeout
+        self.data['xonxoff'] = xonxoff
+        self.data['rtscts'] = rtscts
+        self.data['writeTimeout'] = writeTimeout
+        self.data['dsrdtr'] = dsrdtr
+        self.data['interCharTimeout'] = interCharTimeout
+        
+        self.open()
+        
+    
+    def open(self):
+        """
+        | Opens the connection.
+        | This is automatically called when teh driver is object is created.
+        | It uses the same argument values that were passed when creating the driver object.
+        
+        Args:
+        
+        * None
+        
+        Returns:
+            None
+        """
+        self.conn = serial.Serial(**self.data)
    
    
     def transmit(self,data):
@@ -54,7 +80,7 @@ class SerialDriver:
     
     def receive(self,bytesToRead):
         """
-        Receives the data form the serial port.
+        Receives the data from the serial port.
         
         Args:
         
