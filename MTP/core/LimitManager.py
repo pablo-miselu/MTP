@@ -65,41 +65,59 @@ class LimitManager:
         """
         overallTestResult = True
         for measurementName,measurementValue in measurementDict.iteritems():
-       
-            if self.limitDict[measurementName]['type']=='numeric':
-                if (measurementValue > self.limitDict[measurementName]['min'] and 
-                    measurementValue < self.limitDict[measurementName]['max'] ):
-                    result = True
-                else:
-                    result = False
-                    overallTestResult = False
             
-                self.testMeasurementList.append([testStartTimestamp,testEndTimestamp,
-                                                testName,measurementName,
-                                                'numeric',
-                                                self.limitDict[measurementName]['min'],
-                                                measurementValue,
-                                                self.limitDict[measurementName]['max'],
-                                                result])
-            
-            elif self.limitDict[measurementName]['type']=='string':
-                if measurementValue == self.limitDict[measurementName]['expected']: 
-                    result = True
-                else:
-                    result = False
-                    overallTestResult = False
-
-                self.testMeasurementList.append([testStartTimestamp,testEndTimestamp,
-                                                testName,measurementName,
-                                                'string',
-                                                self.limitDict[measurementName]['expected'],
-                                                measurementValue,
-                                                self.limitDict[measurementName]['expected'],
-                                                result])
-            
-            
+            if isinstance(measurementValue,list) and len(measurementValue)>0:
+                isAddPostFix = True
+                measurementValueList = measurementValue
             else:
-                raise Exception('Invalid type for limitName='+measurementName+'. Review your limit files')
+                isAddPostFix = False
+                measurementValueList = [measurementValue]
+                
+            
+            i = 0
+            for measurementValue in measurementValueList:
+            
+                if isAddPostFix:
+                    postfix =  '_a'+str(i)
+                else:
+                    postfix = ''
+                    
+                if self.limitDict[measurementName]['type']=='numeric':
+                    if (measurementValue >= self.limitDict[measurementName]['min'] and 
+                        measurementValue <= self.limitDict[measurementName]['max'] ):
+                        result = True
+                    else:
+                        result = False
+                        overallTestResult = False
+                
+                    self.testMeasurementList.append([testStartTimestamp,testEndTimestamp,
+                                                    testName,measurementName+postfix,
+                                                    'numeric',
+                                                    self.limitDict[measurementName]['min'],
+                                                    measurementValue,
+                                                    self.limitDict[measurementName]['max'],
+                                                    result])
+                
+                elif self.limitDict[measurementName]['type']=='string':
+                    if measurementValue == self.limitDict[measurementName]['expected']: 
+                        result = True
+                    else:
+                        result = False
+                        overallTestResult = False
+    
+                    self.testMeasurementList.append([testStartTimestamp,testEndTimestamp,
+                                                    testName,measurementName+postfix,
+                                                    'string',
+                                                    self.limitDict[measurementName]['expected'],
+                                                    measurementValue,
+                                                    self.limitDict[measurementName]['expected'],
+                                                    result])
+                
+                
+                else:
+                    raise Exception('Invalid type for limitName='+measurementName+'. Review your limit files')
+            
+                i+=1
                 
         return overallTestResult
     
