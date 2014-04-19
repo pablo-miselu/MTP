@@ -128,7 +128,7 @@ class MtpGui(QtGui.QWidget):
             None
         """
         t = self.consoleDict[consoleID].consoleLabel
-        t.setText(str(t.text())+s)
+        t.setText(str(t.text())+str(s))
         t.adjustSize()
         
         t = self.consoleDict[consoleID]
