@@ -37,6 +37,11 @@ class MtpGui(QtGui.QWidget):
         
         self.setWindowTitle('Miselu Test Platform')
         
+        ###   Sets a timer to poll the incoming queue   ###
+        self.timer = QtCore.QTimer()
+        self.timer.timeout.connect(self.checkQueue)
+        self.timer.start(500)
+        
         self.initLayout()
     
     
@@ -45,26 +50,25 @@ class MtpGui(QtGui.QWidget):
         Initializes the layout of the window.
         """
 
-        ###   Create widget(s)   ###
+        self.stackedLayout = QtGui.QStackedLayout()
+        
+        ###   Index 0   ###
         button = QtGui.QPushButton('Start Test')
-        
-        ###   Connect callback(s)   ###
         button.clicked.connect(self.startTestRun)
+        self.stackedLayout.addWidget(button)
         
-        t = self.layout()
-        if t:
-            ###   If a layout exist clear it and add the button   ###
-            for i in reversed(range(t.count())): 
-                t.itemAt(i).widget().setParent(None)
-            t.addWidget(button)
-        else:
-            ###   If no layout exists create one...  ###
-            varLayout = QtGui.QVBoxLayout()
-            varLayout.setAlignment(QtCore.Qt.AlignTop)
-            varLayout.addWidget(button)
-            self.setLayout(varLayout)
-    
-            
+        ###   Index 1 ###
+        self.tabWidget = QtGui.QTabWidget() 
+        self.stackedLayout.addWidget(self.tabWidget)
+        
+        self.setLayout(self.stackedLayout)
+        
+    def reInitLayout(self):
+        self.stackedLayout.setCurrentIndex(0)
+        self.stackedLayout.takeAt(1).widget().deleteLater()
+        self.tabWidget = QtGui.QTabWidget() 
+        self.stackedLayout.addWidget(self.tabWidget)
+
     def startTestRun(self):
         """
         | Sets the window layout to a test layout.
@@ -73,30 +77,12 @@ class MtpGui(QtGui.QWidget):
         | Sets a timer to periodically check the incoming queue.
         """
         
-        ####   Start of MainWindow Test Layout   ###
-        
-        ###   Init var(s)   ###
         self.consoleDict = {}
-        
-        ###   Create Widget(s)   ###
-        self.tabWidget = QtGui.QTabWidget()
-        
-        ###   Clear the layout and add widget(s)   ###
-        t = self.layout()
-        for i in reversed(range(t.count())): 
-            t.itemAt(i).widget().setParent(None)
-        t.addWidget(self.tabWidget)
-        
-        ####   End of MainWindow Test Layout   ###
+        self.stackedLayout.setCurrentIndex(1)
         
         ###   Launches the *SequencerThread*   ###
         self.sequencerThread = SequencerThread(self.guiApi)
         self.sequencerThread.start()
-        
-        ###   Sets a timer to poll the incoming queue   ###
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.checkQueue)
-        self.timer.start(500)
 
 
     def addConsole(self,consoleID,consoleTitle):
@@ -188,8 +174,8 @@ class MtpGui(QtGui.QWidget):
         elif entry['command']=='closeDialogBox':
             self.dialogWindow.close()            
         
-        elif entry['command']=='initLayout':
-            self.initLayout()
+        elif entry['command']=='reInitLayout':
+            self.reInitLayout()
         
         elif entry['command']=='processEvents':
             QtGui.QApplication.processEvents()

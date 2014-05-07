@@ -76,5 +76,5 @@ class SequencerThread (threading.Thread):
             Sequencer(siteID,configData,limitDict,dbConfig,(),self.guiApi)
        
             
-        self.guiApi.sendMessage({'command':'initLayout'})
+        self.guiApi.sendMessage({'command':'reInitLayout'})
         
