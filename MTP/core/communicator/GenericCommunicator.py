@@ -58,7 +58,12 @@ class GenericCommunicator(object):
             
             driverName = configurationManager['driverName']
             driverConfigParams = configurationManager['driverConfigParams']
-            pollingThreadInterval = configurationManager['pollingThreadInterval']            
+            pollingThreadInterval = configurationManager['pollingThreadInterval']
+            
+            if logLevel in configurationManager:
+                self.loLevel = configurationManager['logLevel']
+            else:
+                self.logLevel = 3        
         
         else:
             
@@ -66,7 +71,8 @@ class GenericCommunicator(object):
             self.guiApi = self.configurationManager.getGuiApi()
             self.logFileBufferSize = self.configurationManager.getLogFileBufferSize()
             self.isMemoryOnly = self.configurationManager.getIsMemoryOnly()
-            self.testRunFolder = self.configurationManager.getTestRunFolder()                                     
+            self.testRunFolder = self.configurationManager.getTestRunFolder()
+            self.logLevel = self.configurationManager.getLogLevel()
             driverName = self.configurationManager.getDriverName(commInstanceID)
             driverConfigParams = self.configurationManager.getDriverConfigParams(commInstanceID)
             
@@ -99,11 +105,12 @@ class GenericCommunicator(object):
             None
         """
         
-        logMessage = self.formatLogMessage(msg,logLevel)
-        self.updateLogFileBuffer(logMessage)
-        self.updateConsoleBuffer(logMessage)
-        if self.guiApi:
-            self.guiApi.sendMessage({'command':'processEvents'})
+        if self.logLevel>=logLevel:    
+            logMessage = self.formatLogMessage(msg,logLevel)
+            self.updateLogFileBuffer(logMessage)
+            self.updateConsoleBuffer(logMessage)
+            if self.guiApi:
+                self.guiApi.sendMessage({'command':'processEvents'})
         
     
     def communicate(self,msg,regex,timeout):
