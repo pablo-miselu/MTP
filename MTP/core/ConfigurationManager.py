@@ -272,7 +272,13 @@ class ConfigurationManager:
         | A bool that enables/disable the use of RouteControl (see :ref:`label_RouteController`).
         """
         return self.getFlags()['isRouteControlEnable']
+    
+    def getLogLevel(self):
+        return self.getFlags()['logLevel']
+    
     #############
     
+   
+   
    
     
