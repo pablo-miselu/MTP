@@ -55,7 +55,12 @@ class MtpGui(QtGui.QWidget):
         ###   Index 0   ###
         button = QtGui.QPushButton('Start Test')
         button.clicked.connect(self.startTestRun)
-        self.stackedLayout.addWidget(button)
+        l = QtGui.QVBoxLayout()
+        l.setAlignment(QtCore.Qt.AlignTop)
+        l.addWidget(button)
+        w = QtGui.QWidget()
+        w.setLayout(l)
+        self.stackedLayout.addWidget(w)
         
         ###   Index 1 ###
         self.tabWidget = QtGui.QTabWidget() 
