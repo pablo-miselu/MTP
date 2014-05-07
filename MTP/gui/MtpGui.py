@@ -128,7 +128,18 @@ class MtpGui(QtGui.QWidget):
             None
         """
         t = self.consoleDict[consoleID].consoleLabel
-        t.setText(str(t.text())+str(s))
+        
+        ss = ''
+        for i in range(len(s)):
+            if ord(s[i])&0x80:
+                c = '[ %0.2X ]' % ord(s[i])
+                print c
+            else:
+                c = s[i]
+            ss += c
+
+
+        t.setText(str(t.text())+str(ss))
         t.adjustSize()
         
         t = self.consoleDict[consoleID]
