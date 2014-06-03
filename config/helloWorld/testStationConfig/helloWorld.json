@@ -2,14 +2,14 @@
     "testSequenceID":"helloWorldSequenceID",
     "testSuiteID":"helloWorldTestSuite",
     "testSequence":[
-                    {"testName":"debugTest_pass","cycles":0},                    
+                    {"testName":"debugTest_pass","cycles":1},                    
                     {"testName":"helloWorld_msgBox","cycles":1}
                    ],
     
     "communicators":{
-      "Null0":{"commClassName":"GenericCommunicator","driverName":"NullDriver","driverConfigParams":{},"isDefault":true },
-      "Null1":{"commClassName":"GenericCommunicator","driverName":"NullDriver","driverConfigParams":{},"isDefault":false},
-      "Null2":{"commClassName":"GenericCommunicator","driverName":"NullDriver","driverConfigParams":{},"isDefault":false}
+      "Null0":{"commClassName":"GenericCommunicator","driverName":"NullDriver","driverConfigParams":{},"isDefault":true ,"pollingThreadInterval":1,"readRetryInterval":1},
+      "Null1":{"commClassName":"GenericCommunicator","driverName":"NullDriver","driverConfigParams":{},"isDefault":false,"pollingThreadInterval":1,"readRetryInterval":1},
+      "Null2":{"commClassName":"GenericCommunicator","driverName":"NullDriver","driverConfigParams":{},"isDefault":false,"pollingThreadInterval":1,"readRetryInterval":1}
     },
     
     "flags":{
@@ -17,8 +17,9 @@
         "isStopOnFail": true,
         "isAutomaticSNdialog": false,
         "isRouteControlEnable": false,
-        "isSkipBeginningRCcheck": false,
+        "isSkipBeginningRCcheck": true,
         "logFileBufferSize":1024,
-        "isMemoryOnly": false
+        "isMemoryOnly": false,
+        "logLevel":3
     }
 }
