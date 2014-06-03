@@ -51,36 +51,38 @@ class GenericCommunicator(object):
         if isinstance(configurationManager,dict):
         
             self.guiApi = None
-            self.logFileBufferSize = configurationManager['logFileBufferSize']
-            self.isMemoryOnly = configurationManager['isMemoryOnly']
-            self.isPrintToConsole = configurationManager['isPrintToConsole']
-            self.testRunFolder = configurationManager['testRunFolder']            
+            self.isPrintToConsole = configurationManager.get('isPrintToConsole',True)
+            
+            self.logFileBufferSize = configurationManager.get('logFileBufferSize',1024)
+            self.isMemoryOnly = configurationManager.get('isMemoryOnly',True)
+            self.testRunFolder = configurationManager.get('testRunFolder')
+            self.logLevel = configurationManager.get('logLevel',3)
             
             driverName = configurationManager['driverName']
             driverConfigParams = configurationManager['driverConfigParams']
-            pollingThreadInterval = configurationManager['pollingThreadInterval']
+            pollingThreadInterval = configurationManager.get('pollingThreadInterval',1)
             
-            if logLevel in configurationManager:
-                self.loLevel = configurationManager['logLevel']
-            else:
-                self.logLevel = 3        
-        
+            self.readRetryInterval = configurationManager.get('readRetryInterval',1)
+            
         else:
             
+            self.guiApi = configurationManager.getGuiApi()
+            self.isPrintToConsole = None
+            
+            self.logFileBufferSize = configurationManager.getLogFileBufferSize()
+            self.isMemoryOnly = configurationManager.getIsMemoryOnly()
+            self.testRunFolder = configurationManager.getTestRunFolder()
+            self.logLevel = configurationManager.getLogLevel()
+            
+            driverName = configurationManager.getDriverName(commInstanceID)
+            driverConfigParams = configurationManager.getDriverConfigParams(commInstanceID)
+            pollingThreadInterval = configurationManager.getPollingThreadInterval(commInstanceID)
+            
+            self.readRetryInterval = configurationManager.getReadRetryInterval(commInstanceID)
             self.configurationManager = configurationManager
-            self.guiApi = self.configurationManager.getGuiApi()
-            self.logFileBufferSize = self.configurationManager.getLogFileBufferSize()
-            self.isMemoryOnly = self.configurationManager.getIsMemoryOnly()
-            self.testRunFolder = self.configurationManager.getTestRunFolder()
-            self.logLevel = self.configurationManager.getLogLevel()
-            driverName = self.configurationManager.getDriverName(commInstanceID)
-            driverConfigParams = self.configurationManager.getDriverConfigParams(commInstanceID)
             
-            pollingThreadInterval = .05
-            #pollingThreadInterval = self.configurationManager.geInterval(commInstanceID)
-            #self.isPrintToConsole = self.configurationManager.getIsPrintToConsole(commInstanceID)
             
-        ###   End of handling of different instance types for configurationMAnager   ###    
+        ###   End of handling of different instance types for configurationManager   ###    
 
         exec('from MTP.drivers.%s import %s' % (driverName,driverName))
         exec('self.driver = '+driverName+'(**driverConfigParams)')
@@ -154,7 +156,7 @@ class GenericCommunicator(object):
         self.driver.transmit(msg)
     
    
-    def receive(self,regex,timeout,interval=1):
+    def receive(self,regex,timeout):
         """
         | Waits until either the parsing buffer has a match of *regex* or until *timeout* seconds have passed.
         | If there was a match it returns it.
@@ -179,7 +181,7 @@ class GenericCommunicator(object):
                 if t!=None:
                     self.parseBuffer = self.parseBuffer[t.end():]        
                     return t
-            sleep(interval)
+            sleep(self.readRetryInterval)
             
         raise Exception('Communicator: Did not receive expected answer within timeout.regex='+str(regex))
     
