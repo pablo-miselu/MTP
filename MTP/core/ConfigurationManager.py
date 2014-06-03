@@ -204,12 +204,21 @@ class ConfigurationManager:
     
     def getDriverConfigParams(self,commInstanceID):
         """
-        | Gets the dictionary of parameters required by the driver to be used by teh communicator identified by *commInstanceID*.
+        | Gets the dictionary of parameters required by the driver to be used by the communicator identified by *commInstanceID*.
         """
         return self.configData['communicators'][commInstanceID]['driverConfigParams']
    
+    def getReadRetryInterval(self,commInstanceID):
+        """
+        | Gets the *readRetryInterval*  parameter for the communicator identified by *commInstanceID*.
+        """
+        return self.configData['communicators'][commInstanceID]['readRetryInterval']
    
-    
+    def getPollingThreadInterval(self,commInstanceID):
+        """
+        | Gets the *pollingThreadInterval*  parameter for the communicator identified by *commInstanceID*.
+        """
+        return self.configData['communicators'][commInstanceID]['pollingThreadInterval']    
     
     ###   Flags   ###
     def getFlags(self):
@@ -274,7 +283,12 @@ class ConfigurationManager:
         return self.getFlags()['isRouteControlEnable']
     
     def getLogLevel(self):
+        """
+        | Gets the value of the flag *getLogLevel*.
+        | An int that controls the verbosity. From 0 to 3. (-1 disables all log messages)
+        """
         return self.getFlags()['logLevel']
+    
     
     #############
     
