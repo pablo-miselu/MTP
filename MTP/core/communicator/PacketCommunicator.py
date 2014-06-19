@@ -101,7 +101,7 @@ class PacketCommunicator(GenericCommunicator):
         self.driver.transmit(msg)
         
         
-    def receive(self,regex,timeout,interval=1):
+    def receive(self,regex,timeout):
         """
         | Waits until either there is a match of *regex* or until *timeout* seconds have passed.
         | If there was a match it returns it.
@@ -126,7 +126,7 @@ class PacketCommunicator(GenericCommunicator):
                     with self.packetBufferLock:
                         self.packetBuffer.pop(i)
                     return t
-            sleep(interval)
+            sleep(self.readRetryInterval)
         
         raise Exception('Communicator: Did not receive expected answer within timeout. regex='+pUtils.formatHex(regex))
 
