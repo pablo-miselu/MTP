@@ -26,7 +26,25 @@ class DeviceDriver:
     """
 
     def __init__(self,device):
-        self.conn = os.open(device, os.O_RDWR|os.O_NONBLOCK)
+        self.device = device
+        self.open()
+   
+   
+    def open(self):
+        """
+        | Opens the connection.
+        | This is automatically called when the driver object is created.
+        | It uses the same argument values that were passed when creating the driver object.
+        
+        Args:
+        
+        * None
+        
+        Returns:
+            None
+        """
+        self.conn = os.open(self.device, os.O_RDWR|os.O_NONBLOCK)
+   
    
     def transmit(self,data):
         """
