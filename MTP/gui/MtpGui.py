@@ -118,7 +118,7 @@ class MtpGui(QtGui.QWidget):
         Returns:
             None
         """
-        t = self.consoleDict[consoleID].consoleLabel
+        
         
         ss = ''
         for i in range(len(s)):
@@ -129,8 +129,8 @@ class MtpGui(QtGui.QWidget):
                 c = s[i]
             ss += c
 
-
-        t.setText(str(t.text())+str(ss))
+        t = self.consoleDict[consoleID].consoleLabel
+        t.setText((str(t.text())+str(ss))[-5000:])
         t.adjustSize()
         
         t = self.consoleDict[consoleID]
