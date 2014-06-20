@@ -271,3 +271,55 @@ class DataMiningApi:
             d[entry[1]][entry[2]][1] = entry[0]
             
         return d
+
+
+    def getWIPdata(self,startRange=None,endRange=None):
+        """
+        Queries the database to find out for each unit what was the last
+        test sequence that it passed and returns an agregate per sequence ID.
+        
+        Args:
+        
+        * startRange (str): The start of the time range to mine (the format should be the same as accepted by the database manager)
+        * endRange (str): The end of the time range to mine (the format should be the same as accepted by the database manager)
+            
+        Returns:
+            A dictionary of the form:
+        
+        .. code-block:: python
+        
+            {
+                testSequenceID:amountOfUnitsAtStation,
+                testSequenceID:amountOfUnitsAtStation,
+                .
+                .
+                .
+                testSequenceID:amountOfUnitsAtStation,
+            }
+        """
+        
+        
+        s = ' SELECT COUNT(TestRun.SN) AS units,TestRun.testSequenceID FROM TestRun,'
+        s+= '    (SELECT SN, MAX(startTimestamp) AS selectedTimestamp'
+        s+= '    FROM TestRun'
+        s+= '    WHERE'
+        s+= '        TestRun.isPass = True'
+        if startRange:
+            s+= '    AND startTimestamp > %s'
+        if endRange:
+            s+= '    AND startTimeStamp < %s'
+        s+= ' GROUP BY SN'
+        s+= '    ) AS t'
+        s+= ' WHERE '
+        s+= '     TestRun.SN = t.SN'
+        s+= ' AND TestRun.startTimestamp = selectedTimestamp'
+        s+= ' GROUP BY TestRun.testSequenceID'
+        s+= ';'
+        v = [startRange,endRange]
+        data = self.sql.quickSqlRead(s,v)
+        
+        d = {}
+        for v,k in data:
+            d[k] = v
+        
+        return d
