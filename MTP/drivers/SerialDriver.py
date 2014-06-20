@@ -51,7 +51,7 @@ class SerialDriver:
     def open(self):
         """
         | Opens the connection.
-        | This is automatically called when teh driver is object is created.
+        | This is automatically called when the driver object is created.
         | It uses the same argument values that were passed when creating the driver object.
         
         Args:
