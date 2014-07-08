@@ -72,7 +72,8 @@ class Sequencer:
         self.isMemoryOnly = self.configurationManager.getIsMemoryOnly()
         self.isStopOnFail = self.configurationManager.getIsStopOnFail()
         self.wholeCycles = self.configurationManager.getWholeCycles()
-        self.routeControllerEnable = self.configurationManager.getIsRouteControlEnable()
+        self.isRouteControllerEnable = self.configurationManager.getIsRouteControlEnable()
+        self.isDatabaseEnable = self.configurationManager.getIsDatabaseEnable()
         ###   End of init of object variables   ###
         
         
@@ -139,7 +140,7 @@ class Sequencer:
                 if self.isMemoryOnly==False:
                     self.testRunFolder = self.configurationManager.initTestRunFolder(self.startTimestamp)
                 
-                if self.routeControllerEnable and (not self.isSkipBeginningRCcheck):
+                if self.isRouteControllerEnable and (not self.isSkipBeginningRCcheck):
 
                     SN = self.configurationManager.getSN()                   
                     if self.routeController.isOkToTest(SN,self.testSequenceID,dependencyDict)!=True:
@@ -260,23 +261,29 @@ class Sequencer:
                         ### Write data file
                         self.writeTestRunDataFiles()
 
-                    #Send to database
-                    self.dbApi.submitTestRunData(self.testRunSummary,
-                                            self.testMeasurementList,
-                                            self.stringDictionary,
-                                            self.numericDictionary,
-                                            self.fileDictionary,
-                                            self.dependencyDict)
-                    print 'Data submitted to the database'
+                    
+                    if self.isDatabaseEnable:
+                        
+                        #Send to database
+                        self.dbApi.submitTestRunData(self.testRunSummary,
+                                                self.testMeasurementList,
+                                                self.stringDictionary,
+                                                self.numericDictionary,
+                                                self.fileDictionary,
+                                                self.dependencyDict)
+                        print 'Data submitted to the database'
+                        
+                        #RouteControl
+                        if self.isRouteControllerEnable!=False:
+                            if self.routeController.updateRouteControl_auto(SN,self.testSequenceID,self.cycleTestResult,self.dependencyDict)!=True:
+                                if self.cycleTestResult:
+                                    self.guiApi.sendMessage({'command':'pDialog','msg':'Route Control Exception (end check)'})
+                                    self.guiApi.waitForDialogReturn()
+                                    return
+                    else:
+                        print 'Warning: Database is turned off'
                     
                     
-                    #RouteControl
-                    if self.routeControllerEnable!=False:
-                        if self.routeController.updateRouteControl_auto(SN,self.testSequenceID,self.cycleTestResult,self.dependencyDict)!=True:
-                            if self.cycleTestResult:
-                                self.guiApi.sendMessage({'command':'pDialog','msg':'Route Control Exception (end check)'})
-                                self.guiApi.waitForDialogReturn()
-                                return
 
                 except Exception,e:
                     

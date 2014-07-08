@@ -232,15 +232,15 @@ class ConfigurationManager:
         | Gets the value of the flag *wholeCycles*.
         | An int that indicates how many time to execute the whole test sequence.
         """
-        return self.getFlags()['wholeCycles']
+        return self.getFlags().get('wholeCycles',1)
     
     def getIsStopOnFail(self):
         """
         | Gets the value of the flag *isStopOnFail*.
         | A bool that if true, the test run will end early when one test fails.
         """
-        return self.getFlags()['isStopOnFail']
-        
+        return self.getFlags().get('isStopOnFail',True)
+    
     def getIsAutomaticSNdialog(self):
         """
         | Gets the *isAutomaticSNdialog* flag.
@@ -250,7 +250,7 @@ class ConfigurationManager:
         | the SN. (i.e. the test code reads the SN electronically from the
         | UUT and passes it to the platform by using *setSN*) 
         """
-        return self.getFlags()['isAutomaticSNdialog']
+        return self.getFlags().get('isAutomaticSNdialog',True)
     
     def getIsSkipBeginningRCcheck(self):
         """
@@ -259,35 +259,42 @@ class ConfigurationManager:
         | This is needed in cases where route control is wanted, but not all the SN's required for the check at available beforehand.
         | In this scenario the test code will electronically collect and provide the SN's. At the end of the test run the routing will be checked.
         """
-        return self.getFlags()['isSkipBeginningRCcheck']
+        return self.getFlags().get('isSkipBeginningRCcheck',True)
     
     def getLogFileBufferSize(self):
         """
         | Gets the value of the flag *logFileBufferSize*.
         | An int that defines at which size should the log file buffer be flushed (see :ref:`label_Communicator`).
         """
-        return self.getFlags()['logFileBufferSize']
+        return self.getFlags().get('logFileBufferSize',1024)
         
     def getIsMemoryOnly(self):
         """
         | Gets the value of the flag *isMemoryOnly*.
         | A bool that defines whether or not write the test run data to disk.
         """
-        return self.getFlags()['isMemoryOnly']
+        return self.getFlags().get('isMemoryOnly',False)
         
     def getIsRouteControlEnable(self):
         """
         | Gets the value of the flag *isRouteControlEnable*.
         | A bool that enables/disable the use of RouteControl (see :ref:`label_RouteController`).
         """
-        return self.getFlags()['isRouteControlEnable']
+        return self.getFlags().get('isRouteControlEnable',False)
+    
+    def getIsDatabaseEnable(self):
+        """
+        | Gets the value of the flag *isDatabaseEnable*.
+        | A bool that enables/disable the use of the database
+        """
+        return self.getFlags().get('isDatabaseEnable',True)
     
     def getLogLevel(self):
         """
         | Gets the value of the flag *getLogLevel*.
         | An int that controls the verbosity. From 0 to 3. (-1 disables all log messages)
         """
-        return self.getFlags()['logLevel']
+        return self.getFlags().get('logLevel',0)
     
     
     #############
