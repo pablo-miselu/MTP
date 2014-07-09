@@ -20,6 +20,7 @@
         "isSkipBeginningRCcheck": true,
         "logFileBufferSize":1024,
         "isMemoryOnly": false,
-        "logLevel":3
+        "logLevel":3,
+        "isDatabaseEnable":false
     }
 }
