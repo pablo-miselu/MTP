@@ -165,10 +165,12 @@ class MtpGui(QtGui.QWidget):
             None
         """
         if entry['command']=='addConsole':
+    
             self.addConsole(entry['consoleID'],entry['title'])
         
         elif entry['command']=='consoleWrite':
-            self.consoleWrite(entry['consoleID'],entry['text'])
+            if (entry['consoleID'] in self.consoleDict.keys() ):
+                self.consoleWrite(entry['consoleID'],entry['text'])
       
         elif entry['command']=='pDialog':
             entry.pop('command')
@@ -195,6 +197,11 @@ class MtpGui(QtGui.QWidget):
         elif entry['command']=='webKitWindow':
             entry.pop('command')
             self.webKitWindow = Window_webKit(**entry)
+            self.webKitWindow.show()
+        
+        elif entry['command']=='webKitWindow2':
+            entry.pop('command')
+            self.webKitWindow = Window_webKit_2(**entry)
             self.webKitWindow.show()
             
         elif entry['command']=='closeWebKitWindow':
@@ -445,6 +452,15 @@ class Window_webKit(QtGui.QDialog):
         self.view.load(QtCore.QUrl(urlString))
         self.layout = QtGui.QVBoxLayout(self)     
         self.layout.addWidget(self.view)
+
+class Window_webKit_2(QtGui.QWidget):
+    def __init__(self,html):
+        super(Window_webKit_2, self).__init__(parent=None)
+        self.view = QtWebKit.QWebView(self)
+        self.view.setHtml(html,QtCore.QUrl('file:///home/pdelagarza/data/repos/testStation/nyp/forms/keyResult/'))
+        self.layout = QtGui.QVBoxLayout(self)     
+        self.layout.addWidget(self.view)
+
    
 if __name__ == '__main__':   
     app = QtGui.QApplication([])

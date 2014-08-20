@@ -117,10 +117,11 @@ class Sequencer:
         
         for commName, comm in self.configurationManager.configData['communicators'].items():
             if 'isDefault' in comm and comm['isDefault']:
-                guiApi.sendMessage({'command':'addConsole',
-                                    'consoleID':commName,
-                                    'title':commName,
-                                  })
+                if 'isShowInUI' not in comm or comm['isShowInUI']==True:
+                    guiApi.sendMessage({'command':'addConsole',
+                                        'consoleID':commName,
+                                        'title':commName,
+                                      })
                 defaultCommName = commName
                 break
         
@@ -129,10 +130,13 @@ class Sequencer:
         
         for commName in t:
             if commName==defaultCommName: continue
-            guiApi.sendMessage({'command':'addConsole',
-                                'consoleID':commName,
-                                'title':commName,
-                              })
+            
+            comm = self.configurationManager.configData['communicators'][commName]
+            if 'isShowInUI' not in comm or comm['isShowInUI']==True:
+                guiApi.sendMessage({'command':'addConsole',
+                                    'consoleID':commName,
+                                    'title':commName,
+                                  })
             
                 
         for self.j in range(self.wholeCycles):
