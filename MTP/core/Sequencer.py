@@ -161,7 +161,7 @@ class Sequencer:
                     raise Exception('Failed communicator init:'+str(e))
                 
                 exec('from MTP.testSuites.'+self.testSuiteID+' import '+self.testSuiteID)
-                exec('self.testSuite = '+self.testSuiteID+'(self.configurationManager)')
+                exec('self.testSuite = '+self.testSuiteID+'(self.configurationManager,self.limitManager)')
  
                 for test in self.configData['testSequence']:
                     
@@ -197,15 +197,13 @@ class Sequencer:
                 self.cycleTestResult = False
                 
                 s = (
+                     '\n***   From the main "try"   ***'+
                      '\nSequencer, (j,i)='+str(self.j)+','+str(self.i)+
                      '\nlastTestEntered='+self.lastTestEntered+
-                     '\nexception='+str(e)+
                      '\nexceptionMessage='+e.message+
-                     '\nsys.exc_info='+str(sys.exc_info())+
-                     '\nFrom the main "try"'+
-                     '\ntraceback='+ '\n'.join(traceback.format_tb(sys.exc_info()[2]) )
+                     '\ntraceback='+ traceback.format_exc()+
+                     '\n*******************************'
                     )
-                
                 
                 if 'default' in self.commDict:
                     self.commDict['default'].log(s,1)
