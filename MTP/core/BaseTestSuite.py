@@ -28,6 +28,7 @@ class BaseTestSuite:
         
         #Sets object variables with apropriate object handles
         self.configurationManager = configurationManager
+        self.limitManager = limitManager
         self.commDict = self.configurationManager.getCommDict()
         self.guiApi = self.configurationManager.getGuiApi()   
     
@@ -36,7 +37,7 @@ class BaseTestSuite:
     * configurationManager (ConfigurationManager): An instance of a *ConfigurationManager* (see :ref:`label_ConfigurationManager`)
     """
 
-    def __init__(self,configurationManager):
+    def __init__(self,configurationManager,limitManager):
         
         #Instantiates the dictionaries for custom data logging:
         self.numericDictionary = {}
@@ -45,6 +46,7 @@ class BaseTestSuite:
         
         #Sets object variables with apropriate object handles
         self.configurationManager = configurationManager
+        self.limitManager = limitManager
         self.commDict = self.configurationManager.getCommDict()
         self.guiApi = self.configurationManager.getGuiApi()
         
