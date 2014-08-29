@@ -134,3 +134,8 @@ class LimitManager:
         """
         return self.testMeasurementList
      
+    def getLimits(self):
+        """
+        Gets the *limitDict*.
+        """
+        return self.limitDict
