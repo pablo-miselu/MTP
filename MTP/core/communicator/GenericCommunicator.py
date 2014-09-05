@@ -204,7 +204,7 @@ class GenericCommunicator(object):
     
     def formatLogMessage(self,msg,logLevel):
         """
-        | Formats *msg* and *logLevel* into a string of the form *LogMessageStart <logLevel> <timeStamp> Msg:<msg> LogMessageEnd*.
+        | Formats *msg* and *logLevel* into a string of the form *<LogMessageStart <logLevel> <timeStamp> Msg:<msg> LogMessageEnd>*.
         | Appends a newline at the end.
         
         Args:
@@ -216,7 +216,7 @@ class GenericCommunicator(object):
             The formatted string
         """
         
-        return 'LogMessageStart '+str(logLevel)+' '+pUtils.getTimeStamp()+' Msg:'+msg+' LogMessageEnd\n'
+        return '\n<LogMessageStart '+str(logLevel)+' '+pUtils.getTimeStamp()+'\n   Msg:'+msg+'\nLogMessageEnd>\n'
     
     
     def updateLogFileBuffer(self,data,forceFlush=False):

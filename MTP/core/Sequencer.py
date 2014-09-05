@@ -181,7 +181,7 @@ class Sequencer:
                         if testResult == False:
                             self.cycleTestResult = False
                         
-                        self.commDict['default'].log('Result of '+test['testName']+' '+str(self.j)+','+str(self.i)+' '+str(testResult),0 )
+                        self.commDict['default'].log('Result of '+test['testName']+' '+str(self.j)+','+str(self.i)+' '+('PASS' if testResult else 'FAIL'),0 )
                         
                         if self.isStopOnFail and testResult==False:
                           break
@@ -191,6 +191,13 @@ class Sequencer:
                             break
 
                 self.testSuite.cleanup()
+                
+                
+                ####HERE error if test fail could be written to summary screen
+                #ttt_s = pUtils.quickFileRead(self.testRunFolder+'/db/TestMeasurement.csv')
+                ##'\n'.join(self.limitManager.testMeasurementList)
+                #self.commDict['default'].log(ttt_s,0)
+                
     
             except Exception, e:
                 
@@ -304,8 +311,11 @@ class Sequencer:
                     
                 else:
                     if self.j == (self.wholeCycles-1):
-                        self.guiApi.sendMessage({'command':'pDialog','imageFileName': 'pass.png' if self.cycleTestResult else 'fail.png'})
-                        self.guiApi.waitForDialogReturn()
+                        self.guiApi.sendMessage({'command':'pDialog',
+                                                 'buttonTextList':['OK','TestRunFolder'],
+                                                 'imageFileName': 'pass.png' if self.cycleTestResult else 'fail.png'})
+                        if self.guiApi.waitForDialogReturn()[0]=='TestRunFolder':
+                            pUtils.runProgram('nautilus '+self.testRunFolder,shell=True)
                 
     def writeTestRunDataFiles(self):
         """
