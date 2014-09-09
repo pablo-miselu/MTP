@@ -337,11 +337,8 @@ class Window_pDialog(QtGui.QDialog):
         super(Window_pDialog, self).__init__(parent=None)
 
         ###   Object variables   ###
-        if defaultButtonText==None:
-            defaultButtonText = buttonTextList[0]    
         self.queue = queue
         self.buttonTextList = buttonTextList
-        self.defaultTextButton = defaultButtonText
         self.inputHeight = inputHeight 
         
         ###   Size and Position   ###   
@@ -379,27 +376,34 @@ class Window_pDialog(QtGui.QDialog):
             self.connect(self.textInput,QtCore.SIGNAL('ENTER'),lambda : self.closing('ENTER') )
             
         ###   Buttons   ###
-        buttonLayout = QtGui.QHBoxLayout()
-        for i in range (len(buttonTextList)):
-            button = QtGui.QPushButton(buttonTextList[i])
-            buttonLayout.addWidget(button)
-            
-            # This block is required to make constant the index 'i'.
-            # If you were to pass buttonTextList[i] instead for the lambda function
-            # all would be connected to the last element of buttonTextList.
-            if   i==0: button.clicked.connect(lambda : self.closing(buttonTextList[0]) )
-            elif i==1: button.clicked.connect(lambda : self.closing(buttonTextList[1]) )
-            elif i==2: button.clicked.connect(lambda : self.closing(buttonTextList[2]) )
-            elif i==3: button.clicked.connect(lambda : self.closing(buttonTextList[3]) )
-            elif i==4: button.clicked.connect(lambda : self.closing(buttonTextList[4]) )
-            elif i==5: button.clicked.connect(lambda : self.closing(buttonTextList[5]) )
-            elif i==6: button.clicked.connect(lambda : self.closing(buttonTextList[6]) )
-            elif i==7: button.clicked.connect(lambda : self.closing(buttonTextList[7]) )
-            elif i==8: button.clicked.connect(lambda : self.closing(buttonTextList[8]) )
-            elif i==9: button.clicked.connect(lambda : self.closing(buttonTextList[9]) )
+        if len(buttonTextList)>0:
+            if defaultButtonText==None:
+                defaultButtonText = buttonTextList[0]    
+            self.defaultTextButton = defaultButtonText
         
-        layout.addLayout(buttonLayout)
-     
+            buttonLayout = QtGui.QHBoxLayout()
+            for i in range (len(buttonTextList)):
+                button = QtGui.QPushButton(buttonTextList[i])
+                buttonLayout.addWidget(button)
+                
+                # This block is required to make constant the index 'i'.
+                # If you were to pass buttonTextList[i] instead for the lambda function
+                # all would be connected to the last element of buttonTextList.
+                if   i==0: button.clicked.connect(lambda : self.closing(buttonTextList[0]) )
+                elif i==1: button.clicked.connect(lambda : self.closing(buttonTextList[1]) )
+                elif i==2: button.clicked.connect(lambda : self.closing(buttonTextList[2]) )
+                elif i==3: button.clicked.connect(lambda : self.closing(buttonTextList[3]) )
+                elif i==4: button.clicked.connect(lambda : self.closing(buttonTextList[4]) )
+                elif i==5: button.clicked.connect(lambda : self.closing(buttonTextList[5]) )
+                elif i==6: button.clicked.connect(lambda : self.closing(buttonTextList[6]) )
+                elif i==7: button.clicked.connect(lambda : self.closing(buttonTextList[7]) )
+                elif i==8: button.clicked.connect(lambda : self.closing(buttonTextList[8]) )
+                elif i==9: button.clicked.connect(lambda : self.closing(buttonTextList[9]) )
+            
+            layout.addLayout(buttonLayout)
+        else:
+            self.defaultTextButton = None
+            
         ###   Add Layout   ###
         self.setLayout(layout)
         
