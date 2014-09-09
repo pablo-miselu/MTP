@@ -28,6 +28,8 @@ import traceback
 import socket
 import re
 
+from time import sleep
+
 class Sequencer:
     """
     | It handles the sequencing of the tests, it is virtually the top level of a test run execution.
@@ -77,6 +79,8 @@ class Sequencer:
         
         #Init clean reusable variables from guiApi (e.g. queues)
         self.guiApi.sendMessage({'command':'init'})
+        #Wait so that the gui receives and handles the message
+        sleep(1)
         
         ###   End of init of object variables   ###
         
