@@ -315,16 +315,19 @@ class Sequencer:
                     print ss
                     pUtils.quickFileWrite(self.crashLogFullPath,ss,'at')
 
-                    self.guiApi.sendMessage({'command':'pDialog','imageFileName': 'fail.png'})
-                    self.guiApi.waitForDialogReturn()
-                    
+                    imageFileName = 'pass.png' if self.cycleTestResult else 'fail.png'
+                         
                 else:
-                    if self.j == (self.wholeCycles-1):
-                        self.guiApi.sendMessage({'command':'pDialog',
-                                                 'buttonTextList':['OK','TestRunFolder'],
-                                                 'imageFileName': 'pass.png' if self.cycleTestResult else 'fail.png'})
-                        if self.guiApi.waitForDialogReturn()[0]=='TestRunFolder':
-                            pUtils.runProgram('nautilus '+self.testRunFolder,shell=True)
+                    imageFileName = 'pass.png' if self.cycleTestResult else 'fail.png'
+     
+                if self.j == (self.wholeCycles-1):
+            
+                    self.guiApi.sendMessage({'command':'pDialog',
+                                             'buttonTextList':['OK','TestRunFolder'],
+                                             'imageFileName':imageFileName})
+                    if self.guiApi.waitForDialogReturn()[0]=='TestRunFolder':
+                        pUtils.runProgram('pcmanfm '+self.testRunFolder,shell=True)
+                
                 
     def writeTestRunDataFiles(self):
         """
