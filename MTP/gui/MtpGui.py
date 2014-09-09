@@ -136,6 +136,8 @@ class MtpGui(QtGui.QWidget):
         t = self.consoleDict[consoleID]
         t.scrollArea.verticalScrollBar().setValue(t.scrollArea.verticalScrollBar().maximum())
 
+    def flushOutboundQueue(self):
+        self.outBoundQueue.queue.clear()
 
     def checkQueue(self):
         """
@@ -184,6 +186,12 @@ class MtpGui(QtGui.QWidget):
         
         elif entry['command']=='processEvents':
             QtGui.QApplication.processEvents()
+        
+        elif entry['command']=='flushOutboundQueue':
+            self.flushOutboundQueue()
+        
+        elif entry['command']=='init':
+            self.flushOutboundQueue()
         else:
             raise Exception('Invalid command:'+entry['command'])  
     

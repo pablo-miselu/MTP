@@ -74,6 +74,10 @@ class Sequencer:
         self.wholeCycles = self.configurationManager.getWholeCycles()
         self.isRouteControllerEnable = self.configurationManager.getIsRouteControlEnable()
         self.isDatabaseEnable = self.configurationManager.getIsDatabaseEnable()
+        
+        #Init clean reusable variables from guiApi (e.g. queues)
+        self.guiApi.sendMessage({'command':'init'})
+        
         ###   End of init of object variables   ###
         
         
@@ -86,6 +90,7 @@ class Sequencer:
             while tt==None:
                 self.guiApi.sendMessage({'command':'pDialog','msg':'SN for UUT','inputHeight':30})
                 t = self.guiApi.waitForDialogReturn()
+              
                 tt = re.match(uutSNregex,t[1])
             self.configurationManager.setSN(t[1])
           
