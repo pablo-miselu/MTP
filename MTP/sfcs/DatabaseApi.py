@@ -122,9 +122,9 @@ class DatabaseApi():
         v = []
         for measurement in measurementList:
             data = measurement
-            if data[4]=='DOUBLE':
+            if data[4]=='numeric':
                 formattedMeasurement = [testRunID]+data[0:8]+data[5:8]+data[8:]
-            else: #Is dataTtype is string or something else just store it as string
+            else: #Is dataType is string or something else just store it as string
                 formattedMeasurement = [testRunID]+data[0:8]+[0,0,0]+data[8:]
             
             #This converts YYYMMDD-hhmmss to YYY-MM-DD hh:mm:ss, if needed leaves it the same otherwise
