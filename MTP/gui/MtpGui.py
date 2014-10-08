@@ -15,8 +15,7 @@
 
 from MTP.core.SequencerThread import SequencerThread
 
-from PySide import QtGui, QtCore
-
+from PySide import QtGui, QtCore, QtWebKit
 import Queue
 import os
 
@@ -192,6 +191,15 @@ class MtpGui(QtGui.QWidget):
         
         elif entry['command']=='init':
             self.flushOutboundQueue()
+            
+        elif entry['command']=='webKitWindow':
+            entry.pop('command')
+            self.webKitWindow = Window_webKit(**entry)
+            self.webKitWindow.show()
+            
+        elif entry['command']=='closeWebKitWindow':
+            self.webKitWindow.close()            
+            
         else:
             raise Exception('Invalid command:'+entry['command'])  
     
@@ -430,7 +438,14 @@ class Window_pDialog(QtGui.QDialog):
             self.queue.put( (triggerSrc,None) )
         self.close()
     
-    
+class Window_webKit(QtGui.QWidget):
+    def __init__(self,urlString):
+        super(Window_webKit, self).__init__(parent=None)
+        self.view = QtWebKit.QWebView(self)
+        self.view.load(QtCore.QUrl(urlString))
+        self.layout = QtGui.QVBoxLayout(self)     
+        self.layout.addWidget(self.view)
+   
 if __name__ == '__main__':   
     app = QtGui.QApplication([])
     w = MtpGui()
