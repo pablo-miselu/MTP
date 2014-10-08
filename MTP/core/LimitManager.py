@@ -66,6 +66,8 @@ class LimitManager:
         overallTestResult = True
         for measurementName,measurementValue in measurementDict.iteritems():
             
+            limit = self.limitDict.get(measurementName,{"type":"string","expected":"PASS"})
+            
             if isinstance(measurementValue,list) and len(measurementValue)>0:
                 isAddPostFix = True
                 measurementValueList = measurementValue
@@ -82,9 +84,9 @@ class LimitManager:
                 else:
                     postfix = ''
                     
-                if self.limitDict[measurementName]['type']=='numeric':
-                    if (measurementValue >= self.limitDict[measurementName]['min'] and 
-                        measurementValue <= self.limitDict[measurementName]['max'] ):
+                if limit['type']=='numeric':
+                    if (measurementValue >= limit['min'] and 
+                        measurementValue <= limit['max'] ):
                         result = True
                     else:
                         result = False
@@ -93,13 +95,13 @@ class LimitManager:
                     self.testMeasurementList.append([testStartTimestamp,testEndTimestamp,
                                                     testName,measurementName+postfix,
                                                     'numeric',
-                                                    self.limitDict[measurementName]['min'],
+                                                    limit['min'],
                                                     measurementValue,
-                                                    self.limitDict[measurementName]['max'],
+                                                    limit['max'],
                                                     result])
                 
-                elif self.limitDict[measurementName]['type']=='string':
-                    if measurementValue == self.limitDict[measurementName]['expected']: 
+                elif limit['type']=='string':
+                    if measurementValue == limit['expected']: 
                         result = True
                     else:
                         result = False
@@ -108,9 +110,9 @@ class LimitManager:
                     self.testMeasurementList.append([testStartTimestamp,testEndTimestamp,
                                                     testName,measurementName+postfix,
                                                     'string',
-                                                    self.limitDict[measurementName]['expected'],
+                                                    limit['expected'],
                                                     measurementValue,
-                                                    self.limitDict[measurementName]['expected'],
+                                                    limit['expected'],
                                                     result])
                 
                 
