@@ -131,6 +131,33 @@ class PacketCommunicator(GenericCommunicator):
         raise Exception('Communicator: Did not receive expected answer within timeout. regex='+pUtils.formatHex(regex))
 
 
+    def communicate(self,msg,regex,timeout):
+        """
+        | Clears rawBuffer and packetBuffer.
+        | Sends *msg*.
+        | Waits until either the packet buffer has a match of *regex* or until *timeout* seconds have passed.
+        | If there was a match it returns it.
+        | If there was no match an Exception is raised.
+        
+        Args:
+        
+        * msg (str): The string/message to send
+        * regex (str): A regex, same syntax as the standard python *re* module uses
+        * timeout (float): Timeout in seconds
+            
+        Returns:
+            A *re.MatchObject* instance
+        """
+        
+        data = '0'
+        while len(data)!=0:
+            data = self.driver.receive(999)
+      
+        self.flushRawBuffer()
+        self.flushPacketBuffer()
+        self.transmit(msg)
+        return self.receive(regex,timeout)
+
     def updateRawBuffer(self,data=None,bytesToRemove=None):
         """
         | Updates the internal raw buffer used to stored incoming data.
