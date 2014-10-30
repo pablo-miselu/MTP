@@ -148,13 +148,21 @@ class PacketCommunicator(GenericCommunicator):
         Returns:
             A *re.MatchObject* instance
         """
-        
-        data = '0'
-        while len(data)!=0:
-            data = self.driver.receive(999)
+    
+        with self.pollingThreadLock:
+            while True:
+                data = self.driver.receive(999)
       
-        self.flushRawBuffer()
-        self.flushPacketBuffer()
+                if len(data)>0:    
+                    displayData = pUtils.formatHex(data) + '\n'
+                    self.updateConsoleBuffer(displayData)
+                    self.updateLogFileBuffer(displayData)
+                else:
+                    break
+            
+            self.flushRawBuffer()
+            self.flushPacketBuffer()
+        
         self.transmit(msg)
         return self.receive(regex,timeout)
 

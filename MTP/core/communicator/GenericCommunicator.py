@@ -133,7 +133,17 @@ class GenericCommunicator(object):
             A *re.MatchObject* instance
         """
         
-        self.flushParseBuffer()
+        with self.pollingThreadLock:
+            while True:  
+                data = self.driver.receive(999)
+                
+                if len(data)>0:
+                    self.updateConsoleBuffer(data)
+                    self.updateLogFileBuffer(data)
+                else:
+                    break
+            self.flushParseBuffer()
+        
         self.transmit(msg)
         return self.receive(regex,timeout)
         
