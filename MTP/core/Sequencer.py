@@ -179,7 +179,7 @@ class Sequencer:
                     testResult = None
                     for self.i in range(test['cycles']):
                     
-                        self.commDict['default'].log('Start of '+test['testName']+' '+str(self.j)+','+str(self.i),0)
+                        self.logAll('Start of '+test['testName']+' '+str(self.j)+','+str(self.i),0)
                         
                         testStartTimestamp = pUtils.getTimeStamp()
                         exec('measurementDict = self.testSuite.'+test['testName']+'()')
@@ -190,7 +190,7 @@ class Sequencer:
                         if testResult == False:
                             self.cycleTestResult = False
                         
-                        self.commDict['default'].log('Result of '+test['testName']+' '+str(self.j)+','+str(self.i)+' '+('PASS' if testResult else 'FAIL'),0 )
+                        self.logAll('Result of '+test['testName']+' '+str(self.j)+','+str(self.i)+' '+('PASS' if testResult else 'FAIL'),0 )
                         
                         if self.isStopOnFail and testResult==False:
                           break
@@ -360,4 +360,18 @@ class Sequencer:
         pUtils.quickFileWrite(os.path.join(path,'DependencyDictionary.json'),
                               json.dumps(self.dependencyDict))
         
+    def logAll(self,msg,logLevel):
+        """
+        Logs a message on all communicators
         
+        Args:
+            * msg (str): Message to log
+            * logLevel (int): The logLevel for the message
+        
+        Returns:
+            None
+        """
+        
+        for commName,comm in self.commDict.iteritems():
+            if commName=='default': continue
+            comm.log(msg,logLevel)
