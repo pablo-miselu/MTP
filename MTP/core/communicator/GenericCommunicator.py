@@ -42,6 +42,8 @@ class GenericCommunicator(object):
 
     def __init__(self,commInstanceID,configurationManager):
       
+        self.status = 0
+        
         self.parseBuffer = ''
         self.logFileBuffer = ''
    
@@ -58,9 +60,9 @@ class GenericCommunicator(object):
             self.testRunFolder = configurationManager.get('testRunFolder')
             self.logLevel = configurationManager.get('logLevel',3)
             
-            driverName = configurationManager['driverName']
-            driverConfigParams = configurationManager['driverConfigParams']
-            pollingThreadInterval = configurationManager.get('pollingThreadInterval',1)
+            self.driverName = configurationManager['driverName']
+            self.driverConfigParams = configurationManager['driverConfigParams']
+            self.pollingThreadInterval = configurationManager.get('pollingThreadInterval',1)
             
             self.readRetryInterval = configurationManager.get('readRetryInterval',1)
             
@@ -74,25 +76,42 @@ class GenericCommunicator(object):
             self.testRunFolder = configurationManager.getTestRunFolder()
             self.logLevel = configurationManager.getLogLevel()
             
-            driverName = configurationManager.getDriverName(commInstanceID)
-            driverConfigParams = configurationManager.getDriverConfigParams(commInstanceID)
-            pollingThreadInterval = configurationManager.getPollingThreadInterval(commInstanceID)
+            self.driverName = configurationManager.getDriverName(commInstanceID)
+            self.driverConfigParams = configurationManager.getDriverConfigParams(commInstanceID)
+            self.pollingThreadInterval = configurationManager.getPollingThreadInterval(commInstanceID)
             
             self.readRetryInterval = configurationManager.getReadRetryInterval(commInstanceID)
             self.configurationManager = configurationManager
             
             
         ###   End of handling of different instance types for configurationManager   ###    
-
-        exec('from MTP.drivers.%s import %s' % (driverName,driverName))
-        exec('self.driver = '+driverName+'(**driverConfigParams)')
-
+        
         self.logFileBufferLock = threading.Lock()
         self.parseBufferLock = threading.Lock()
         self.pollingThreadLock = threading.Lock()
-            
-        self.launchPollingThread(pollingThreadInterval)
         
+
+
+    def start(self):
+        """
+        Starts the communicator. At this point opens the connection to the hardware.
+        
+        Args:
+            None
+            
+        Returns:
+            None
+        """
+        
+        if self.status!=0: return #already started
+        
+        self.status =  1
+        
+        exec('from MTP.drivers.%s import %s' % (self.driverName,self.driverName))
+        exec('self.driver = '+self.driverName+'(**self.driverConfigParams)')
+        self.launchPollingThread(self.pollingThreadInterval)
+        
+        self.status = 2
 
     def log (self,msg,logLevel):
         """
@@ -375,10 +394,8 @@ class GenericCommunicator(object):
         Returns:
             None
         """
-        self.pollingThread.endThread()
-        self.pollingThread.join()
-        self.driver.close()
-    
+        self.signalEndPollingThread()
+        self.waitForPollinThreadToEnd()
     
     def signalEndPollingThread(self):
         """
@@ -390,8 +407,10 @@ class GenericCommunicator(object):
         Returns:
             None
         """
-        self.pollingThread.endThread()
+        if self.status!=2: return
         
+        self.pollingThread.endThread()
+        self.status = 3
         
     def waitForPollinThreadToEnd(self):
         """
@@ -404,6 +423,7 @@ class GenericCommunicator(object):
         Returns:
             None
         """
+        if self.status!=3: return
         
         self.pollingThread.join()
         self.driver.close()

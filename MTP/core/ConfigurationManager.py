@@ -71,12 +71,15 @@ class ConfigurationManager:
 
         self.commDict = {}
         for ID in self.configData['communicators']:
+            
             commClassName = self.configData['communicators'][ID]['commClassName']
-            driverName = self.configData['communicators'][ID]['driverName']
-            driverConfigParams = self.configData['communicators'][ID]['driverConfigParams']
             
             exec('from MTP.core.communicator.'+commClassName+' import '+commClassName)
             exec('self.commDict[ID] = '+commClassName+'(ID,self)')
+            
+            isStartOnInit = self.configData['communicators'][ID].get('isStartOnInit',True)
+            if isStartOnInit:
+                self.commDict[ID].start()
                 
             if ('isDefault' in self.configData['communicators'][ID] and
                 self.configData['communicators'][ID]['isDefault']):
