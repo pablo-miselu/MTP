@@ -438,7 +438,7 @@ class Window_pDialog(QtGui.QDialog):
             self.queue.put( (triggerSrc,None) )
         self.close()
     
-class Window_webKit(QtGui.QWidget):
+class Window_webKit(QtGui.QDialog):
     def __init__(self,urlString):
         super(Window_webKit, self).__init__(parent=None)
         self.view = QtWebKit.QWebView(self)
