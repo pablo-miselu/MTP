@@ -157,3 +157,30 @@ class BaseTestSuite:
         self.commDict['default'].log(str(t),3)
         
         return {'testResult':'PASS'}
+    
+    
+    def debugTest_PassOrFail(self):
+        """
+        | A simple test that passes or fail depending on the button pressed.
+        | Displays a dialog window.
+        | Useful for development, testing and troubleshooting.
+        
+        Args:
+            None
+            
+        Returns:
+            The dictionary *{'testResult':'PASS'}*
+        """
+   
+        self.guiApi.sendMessage({'command':'pDialog',
+                                 'title':'Pass or Fail',
+                                 'msg':'',
+                                 'buttonTextList':['PASS','FAIL'],
+                                 'defaultButtonText':'FAIL'})
+        
+        t = None
+        while (t==None):
+            t = self.guiApi.getDialogReturn()
+        self.commDict['default'].log(str(t),3)
+        
+        return {'testResult':t[0]}
