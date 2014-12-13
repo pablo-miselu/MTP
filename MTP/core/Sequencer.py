@@ -51,7 +51,9 @@ class Sequencer:
         self.j = 0
         self.i = 0
         self.lastTestEntered = ''
-        
+        self.allTestResult = True
+        self.cycleTestResult = True
+        self.isException = False
         
         self.siteID = siteID
         self.configData = configData
@@ -140,7 +142,10 @@ class Sequencer:
                 self.i = 0
                 self.commDict = {} #Initializes just in case something crashes when initializing the drivers
                 self.testSuite = None #Initializes just in case something crashes before getting to it
+                
+                if self.cycleTestResult==False: self.allTestResult = False
                 self.cycleTestResult = True
+                
                 self.startTimestamp = pUtils.getTimeStamp()
                 self.crashLogFullPath = os.path.join(os.environ['MTP_TESTSTATION'],'crashLogs','crashLog_'+self.startTimestamp+'.log')
                 self.limitManager.clearTestMeasurementList()
@@ -189,6 +194,7 @@ class Sequencer:
                         
                         if testResult == False:
                             self.cycleTestResult = False
+                            self.allTestResult = False
                         
                         self.logAll('Result of '+test['testName']+' '+str(self.j)+','+str(self.i)+' '+('PASS' if testResult else 'FAIL'),0 )
                         
@@ -211,6 +217,8 @@ class Sequencer:
             except Exception, e:
                 
                 self.cycleTestResult = False
+                self.allTestResult = False
+                self.isException = True
                 
                 s = (
                      '\n***   From the main "try"   ***'+
@@ -301,6 +309,9 @@ class Sequencer:
 
                 except Exception,e:
                     
+                    self.cycleTestResult = False
+                    self.allTestResult = False
+                    self.isException = True
                     
                     s = (
                      '\nSequencer, (j,i)='+str(self.j)+','+str(self.i)+
@@ -315,12 +326,9 @@ class Sequencer:
                     print ss
                     pUtils.quickFileWrite(self.crashLogFullPath,ss,'at')
 
-                    imageFileName = 'pass.png' if self.cycleTestResult else 'fail.png'
-                         
-                else:
-                    imageFileName = 'pass.png' if self.cycleTestResult else 'fail.png'
-     
-                if self.j == (self.wholeCycles-1):
+
+                imageFileName = 'pass.png' if self.allTestResult else 'fail.png'     
+                if self.j == (self.wholeCycles-1) or self.isException:
             
                     self.guiApi.sendMessage({'command':'pDialog',
                                              'buttonTextList':['OK','TestRunFolder'],
@@ -328,6 +336,7 @@ class Sequencer:
                     if self.guiApi.waitForDialogReturn()[0]=='TestRunFolder':
                         pUtils.runProgram('pcmanfm '+self.testRunFolder,shell=True)
                 
+                    return
                 
     def writeTestRunDataFiles(self):
         """
