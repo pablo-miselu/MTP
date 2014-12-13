@@ -178,10 +178,10 @@ class Sequencer:
                 exec('self.testSuite = '+self.testSuiteID+'(self.configurationManager,self.limitManager)')
  
                 for test in self.configData['testSequence']:
+                    if test['cycles']==0: continue
                     
                     self.lastTestEntered = test['testName']
                     
-                    testResult = None
                     for self.i in range(test['cycles']):
                     
                         self.logAll('Start of '+test['testName']+' '+str(self.j)+','+str(self.i),0)
@@ -201,9 +201,8 @@ class Sequencer:
                         if self.isStopOnFail and testResult==False:
                           break
                     
-                    if testResult!=None:
-                        if self.isStopOnFail and testResult==False:
-                            break
+                    if self.isStopOnFail and testResult==False:
+                        break
 
                 self.testSuite.cleanup()
                 
