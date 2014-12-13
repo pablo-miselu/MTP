@@ -103,7 +103,7 @@ class SQL:
         self.cur.close()
         self.cnx.close()
 
-    def quickSqlRead(self,s,v):
+    def quickSqlRead(self,s,v,withHeaders=False):
         """
         Opens a connection, executes the specified SQL statement, retrieves the data and closes the connection.
         
@@ -111,14 +111,23 @@ class SQL:
         
         * s (str): A string containing the sql query
         * v (list): A vector containing any parametrized arguments of the query
+        * withHeaders (bool): If true returns also the table headers
         
         Returns:
             A list of lists with the data of the table resulting from the query.
         """
         self.conn()
-        data = self.read(s,v)
+        
+        
+        self.cur.execute(s,v)
+        headers = [desc[0] for desc in self.cur.description]
+        data = self.cur.fetchall()
         self.close()
+        
+        if withHeaders:
+            return data, headers
         return data
+        
         
     def quickSqlWrite(self,s,v):
         """
