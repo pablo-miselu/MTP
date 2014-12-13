@@ -159,9 +159,10 @@ class BaseTestSuite:
         return {'testResult':'PASS'}
     
     
-    def debugTest_PassOrFail(self):
+    def debugTest_PassOrFailOrExcept(self):
         """
-        | A simple test that passes or fail depending on the button pressed.
+        | A simple test that passes, fails or raises an exception
+        | depending on the button pressed.
         | Displays a dialog window.
         | Useful for development, testing and troubleshooting.
         
@@ -175,12 +176,15 @@ class BaseTestSuite:
         self.guiApi.sendMessage({'command':'pDialog',
                                  'title':'Pass or Fail',
                                  'msg':'',
-                                 'buttonTextList':['PASS','FAIL'],
+                                 'buttonTextList':['PASS','FAIL','EXCEPT'],
                                  'defaultButtonText':'FAIL'})
         
         t = None
         while (t==None):
             t = self.guiApi.getDialogReturn()
         self.commDict['default'].log(str(t),3)
+        
+        if t[0]=='EXCEPT':
+            raise Exception ('Except button was pressed')
         
         return {'testResult':t[0]}
