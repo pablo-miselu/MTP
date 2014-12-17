@@ -75,7 +75,7 @@ limitations under the License.
         
         <h1 style="color:white;">Yields</h1>
         <div  align="center" style="color:white;">
-        <form action="http://localhost:8000/yields/" method="post">
+        <form action="{% url DataMining.views.yieldsView %}" method="post">
             {% csrf_token %}
             Start: <input name="startDate" value="{{startDate}}" type='date'>
             End:<input name="endDate" value="{{endDate}}" type='date'>
