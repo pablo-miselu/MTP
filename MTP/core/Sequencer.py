@@ -87,6 +87,7 @@ class Sequencer:
         ###   End of init of object variables   ###
         
         
+        
         dependencyDict = {}
         ###   Start of automatic SN's handle   ###
         if self.isAutomaticSNdialog:
@@ -154,6 +155,19 @@ class Sequencer:
                 self.crashLogFullPath = os.path.join(os.environ['MTP_TESTSTATION'],'crashLogs','crashLog_'+self.startTimestamp+'.log')
                 self.limitManager.clearTestMeasurementList()
                 
+                ###   Start of Network Verifications   ###
+                if self.isDatabaseEnable:
+                    if not self.isDatabaseReachable():
+                        self.guiApi.sendMessage(
+                            {'command':'pDialog',
+                             'buttonTextList':['OK'],
+                             'msg':'Unable to reach the database',
+                             'imageFileName':'networkProblem.png'})
+                        
+                        self.guiApi.waitForDialogReturn()
+                        raise Exception("Unable to reach the database")
+
+                ###   End of Network Verifications   ###
               
                 if self.isMemoryOnly==False:
                     self.testRunFolder = self.configurationManager.initTestRunFolder(self.startTimestamp)
@@ -289,6 +303,17 @@ class Sequencer:
                     
                     if self.isDatabaseEnable:
                         
+                        #Test Database connectivity
+                        if not self.isDatabaseReachable():
+                            self.guiApi.sendMessage(
+                                {'command':'pDialog',
+                                 'buttonTextList':['OK'],
+                                 'msg':'Unable to reach the database',
+                                 'imageFileName':'networkProblem.png'})
+                            
+                            self.guiApi.waitForDialogReturn()
+                            raise Exception("Unable to reach the database")
+                        
                         #Send to database
                         self.dbApi.submitTestRunData(self.testRunSummary,
                                                 self.testMeasurementList,
@@ -305,6 +330,7 @@ class Sequencer:
                                     self.guiApi.sendMessage({'command':'pDialog','msg':'Route Control Exception (end check)'})
                                     self.guiApi.waitForDialogReturn()
                                     return
+                            
                     else:
                         print 'Warning: Database is turned off'
                     
@@ -387,3 +413,23 @@ class Sequencer:
         for commName,comm in self.commDict.iteritems():
             if commName=='default': continue
             comm.log(msg,logLevel)
+
+    def isDatabaseReachable(self):
+        """
+        Verifies if the database is reachable
+        
+        Args:
+            None
+            
+        Returns:
+            Bool, True=reachable, False=not reachable
+        """
+        
+        #Connect test
+        try:
+            self.dbApi.sql.conn()
+            self.dbApi.sql.close()
+        except:
+            return False
+        return True
+        
