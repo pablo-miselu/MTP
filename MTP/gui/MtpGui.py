@@ -19,6 +19,7 @@ from PySide import QtGui, QtCore, QtWebKit
 import Queue
 import os
 
+import sys
 
 class MtpGui(QtGui.QWidget):
     """
@@ -34,7 +35,7 @@ class MtpGui(QtGui.QWidget):
         self.resize(705,628)
         self.move(400,100)
         
-        self.setWindowTitle('Miselu Test Platform')
+        self.setWindowTitle('Miselu Test Platform ['+sys.argv[3].split('.')[0]+']')
         
         ###   Sets a timer to poll the incoming queue   ###
         self.timer = QtCore.QTimer()
