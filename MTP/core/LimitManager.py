@@ -66,7 +66,13 @@ class LimitManager:
         overallTestResult = True
         for measurementName,measurementValue in measurementDict.iteritems():
             
-            limit = self.limitDict.get(measurementName,{"type":"string","expected":"PASS"})
+            limitName = measurementName
+            if isinstance(measurementValue,dict):
+                limitName = measurementValue.get('limitName',measurementName)
+                measurementValue = measurementValue['measurementValue']
+                
+            
+            limit = self.limitDict.get(limitName,{"type":"string","expected":"PASS"})
             
             if isinstance(measurementValue,list) and len(measurementValue)>0:
                 isAddPostFix = True
