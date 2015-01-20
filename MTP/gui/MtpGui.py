@@ -202,6 +202,8 @@ class MtpGui(QtGui.QWidget):
         
         elif entry['command']=='webKitWindow2':
             entry.pop('command')
+            entry['queue']=self.outBoundQueue
+            entry['parent'] = self
             self.webKitWindow = Window_webKit_2(**entry)
             self.webKitWindow.show()
             
@@ -333,7 +335,7 @@ class Window_pDialog(QtGui.QDialog):
     Args:
     
     * queue (queue): The queue were the data input by the user will be placed
-    * parent (obj): The paren of the dialog window
+    * parent (obj): The parent of the dialog window
     * msg (str) : The message for the dialog window
     * title (str): The title for the dialog window
     * inputHeight (int): Height in pixels for the input field
@@ -454,15 +456,35 @@ class Window_webKit(QtGui.QDialog):
         self.layout = QtGui.QVBoxLayout(self)     
         self.layout.addWidget(self.view)
 
-class Window_webKit_2(QtGui.QWidget):
-    def __init__(self,html):
-        super(Window_webKit_2, self).__init__(parent=None)
+class Window_webKit_2(QtGui.QDialog):
+    def __init__(self,html,urlBase,queue,parent=None,sizeX=400,sizeY=300):
+        #self.html = html
+        #self.urlBase = urlBase
+        self.queue = queue
+        #self.parent = parent
+        
+        super(Window_webKit_2, self).__init__(parent=parent)
+        
+        ###   Size and Position   ###   
+        g = parent.geometry()
+        posX = g.x()+(g.width()-sizeX)/2
+        posY = g.y()+(g.height()-sizeY)/2
+        self.resize(sizeX,sizeY)
+        self.move(posX,posY)
+        
         self.view = QtWebKit.QWebView(self)
-        self.view.setHtml(html,QtCore.QUrl('file:///home/pdelagarza/data/repos/testStation/nyp/forms/keyResult/'))
+        self.view.setHtml(html,QtCore.QUrl(urlBase))
         self.layout = QtGui.QVBoxLayout(self)     
         self.layout.addWidget(self.view)
-
-   
+        button = QtGui.QPushButton('OK')
+        self.layout.addWidget(button)
+        button.clicked.connect(self.closing)
+    
+    def closing(self):
+        self.queue.put( (None,None))
+        self.close()
+        
+        
 if __name__ == '__main__':   
     app = QtGui.QApplication([])
     w = MtpGui()

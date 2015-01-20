@@ -78,6 +78,7 @@ class Sequencer:
         self.wholeCycles = self.configurationManager.getWholeCycles()
         self.isRouteControllerEnable = self.configurationManager.getIsRouteControlEnable()
         self.isDatabaseEnable = self.configurationManager.getIsDatabaseEnable()
+        self.customResultWindow = self.configurationManager.getCustomResultWindow()
         
         #Init clean reusable variables from guiApi (e.g. queues)
         self.guiApi.sendMessage({'command':'init'})
@@ -358,12 +359,17 @@ class Sequencer:
 
                 imageFileName = 'pass.png' if self.allTestResult else 'fail.png'     
                 if self.j == (self.wholeCycles-1) or self.isException:
-            
-                    self.guiApi.sendMessage({'command':'pDialog',
-                                             'buttonTextList':['OK','TestRunFolder'],
-                                             'imageFileName':imageFileName})
-                    if self.guiApi.waitForDialogReturn()[0]=='TestRunFolder':
-                        pUtils.runProgram('pcmanfm '+self.testRunFolder,shell=True)
+                    
+                    isDefaultResultWindowEnable = True
+                    if self.customResultWindow!=None:
+                        exec('isDefaultResultWindowEnable = self.testSuite.'+self.customResultWindow+'(allTestResult=self.allTestResult)')
+                    
+                    if isDefaultResultWindowEnable:
+                        self.guiApi.sendMessage({'command':'pDialog',
+                                                 'buttonTextList':['OK','TestRunFolder'],
+                                                 'imageFileName':imageFileName})
+                        if self.guiApi.waitForDialogReturn()[0]=='TestRunFolder':
+                            pUtils.runProgram('pcmanfm '+self.testRunFolder,shell=True)
                 
                     return
                 

@@ -292,6 +292,13 @@ class ConfigurationManager:
         """
         return self.getFlags().get('isDatabaseEnable',True)
     
+    def getCustomResultWindow(self):
+        """
+        | Gets the value of the flag *customResultWindow*.
+        | A string with the name ofthe function to call at the end of the test to present results.
+        """
+        return self.getFlags().get('customResultWindow',None)
+    
     def getLogLevel(self):
         """
         | Gets the value of the flag *getLogLevel*.
