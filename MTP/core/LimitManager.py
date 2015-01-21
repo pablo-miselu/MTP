@@ -64,7 +64,8 @@ class LimitManager:
             A bool, true if every measurement was within limits, false otherwise
         """
         overallTestResult = True
-        for measurementName,measurementValue in measurementDict.iteritems():
+        sortedMeasurementList = sorted(measurementDict.items(),key=lambda s:s[0])
+        for measurementName,measurementValue in sortedMeasurementList:
             
             limitName = measurementName
             if isinstance(measurementValue,dict):
