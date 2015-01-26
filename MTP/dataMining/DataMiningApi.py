@@ -27,6 +27,41 @@ class DataMiningApi:
     
     def __init__(self,dbConfig):
         self.sql = SQL(**dbConfig)
+        
+    
+    def getTestRunData(self,testSequenceID,startRange=None,endRange=None,SNlist=None):    
+        v = [testSequenceID]
+        
+        ss_LastPass =   'LastPass AS'
+        ss_LastPass+= '\n (SELECT SN,MAX(endTimestamp) AS endTimestamp FROM TestRun'
+        ss_LastPass+= '\n  WHERE testSequenceID=%s'
+        if startRange!=None:
+            ss_LastPass+= '\n    AND endTimestamp>%s'
+            v.append(startRange)
+        if endRange!=None:
+            ss_LastPass+= '\n    AND endTimestamp<%s'   
+            v.append(endRange)
+        if SNlist!=None:
+            ss_LastPass+= '\n    AND (    SN=%s'
+            ss_LastPass+= '\n          OR SN=%s'*(len(SNlist)-1)
+            ss_LastPass+= '\n )'
+            v+= SNlist
+        
+        ss_LastPass+= '\n GROUP BY SN'
+        ss_LastPass+= '\n )'
+      
+      
+        ss_TestRunLastPass =   'TestRunLastPass AS'
+        ss_TestRunLastPass+= '\n (SELECT TestRun.* FROM TestRun, LastPass'
+        ss_TestRunLastPass+= '\n  WHERE TestRun.SN = LastPass.SN'
+        ss_TestRunLastPass+= '\n    AND TestRun.endTimestamp = LastPass.endTimeStamp'
+        ss_TestRunLastPass+= '\n )'
+        
+        s = 'WITH '+ss_LastPass+'\n ,'+ss_TestRunLastPass + '\n SELECT * from TestRunLastPass;'
+        
+        return self.sql.quickSqlRead(s,v,False)
+    
+    
     
     def getYieldAndFailureData(self,startRange,endRange):
         """
@@ -399,9 +434,9 @@ class DataMiningApi:
         if isPass!=None:
             ss_LastPass+= '\n    AND isPass=%s'
         if startRange!=None:
-            ss_LastPass+= '\n    AND endTimestramp>%s'
+            ss_LastPass+= '\n    AND endTimestamp>%s'
         if endRange!=None:
-            ss_LastPass+= '\n    AND endTimestramp<%s'   
+            ss_LastPass+= '\n    AND endTimestamp<%s'   
         if SNlist!=None:
             ss_LastPass+= '\n    AND (    SN=%s'
             ss_LastPass+= '\n          OR SN=%s'*(len(SNlist)-1)
@@ -422,9 +457,9 @@ class DataMiningApi:
         if isPass!=None:
             ss_TestRunAllPass+= '\n    AND isPass=%s'
         if startRange!=None:
-            ss_TestRunAllPass+= '\n    AND endTimestramp>%s'
+            ss_TestRunAllPass+= '\n    AND endTimestamp>%s'
         if endRange!=None:
-            ss_TestRunAllPass+= '\n    AND endTimestramp<%s'   
+            ss_TestRunAllPass+= '\n    AND endTimestamp<%s'   
         if SNlist!=None:
             ss_TestRunAllPass+= '\n    AND (    SN=%s'
             ss_TestRunAllPass+= '\n          OR SN=%s'*(len(SNlist)-1)
@@ -575,3 +610,8 @@ def genHorizontalizeString(tableName,srcTableName,testEntryList):
 #    s+='\n )'
 #    
 #    return s,v
+
+############################################################
+
+
+    
