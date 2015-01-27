@@ -61,6 +61,16 @@ class DataMiningApi:
         
         return self.sql.quickSqlRead(s,v,False)
     
+    def getComponents(self,testRunID):
+        d = {}
+        s = 'SELECT key,value FROM Components'
+        s+='\n WHERE %s=testRunID'
+        s+='\n;'
+        v = [testRunID]
+        data = self.sql.quickSqlRead(s,v,False)
+        for row in data:
+            d[row[0]]=row[1]
+        return d
     
     
     def getYieldAndFailureData(self,startRange,endRange):
