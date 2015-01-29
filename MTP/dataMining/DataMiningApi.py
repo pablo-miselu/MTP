@@ -27,14 +27,79 @@ class DataMiningApi:
     
     def __init__(self,dbConfig):
         self.sql = SQL(**dbConfig)
-        
+  
+  
+    def getTestRunData_all(self,testSequenceID,startRange=None,endRange=None,SNlist=None,isPass=None):    
+        v = [testSequenceID]
     
-    def getTestRunData(self,testSequenceID,startRange=None,endRange=None,SNlist=None):    
+        ss_TestRunAllPass =   'TestRunAllPass AS'
+        ss_TestRunAllPass+= '\n (SELECT * FROM TestRun'
+        ss_TestRunAllPass+= '\n  WHERE testSequenceID=%s'
+        if isPass!=None:
+            ss_TestRunAllPass+= '\n    AND isPass=%s'
+            v.append(isPass)
+        if startRange!=None:
+            ss_TestRunAllPass+= '\n    AND endTimestamp>%s'
+            v.append(startRange)
+        if endRange!=None:
+            ss_TestRunAllPass+= '\n    AND endTimestamp<%s'
+            v.append(endRange)
+        if SNlist!=None:
+            ss_TestRunAllPass+= '\n    AND (    SN=%s'
+            ss_TestRunAllPass+= '\n          OR SN=%s'*(len(SNlist)-1)
+            ss_TestRunAllPass+= '\n )'
+            v+= SNlist
+        ss_TestRunAllPass+= '\n )'
+      
+        s = 'WITH '+ss_TestRunAllPass+'\n SELECT * from TestRunAllPass;'
+        
+        return self.sql.quickSqlRead(s,v,False)
+    
+    
+    def getTestRunData_first(self,testSequenceID,startRange=None,endRange=None,SNlist=None,isPass=None):    
+        v = [testSequenceID]
+        
+        ss_FirstPass =   'FirstPass AS'
+        ss_FirstPass+= '\n (SELECT SN,MIN(endTimestamp) AS endTimestamp FROM TestRun'
+        ss_FirstPass+= '\n  WHERE testSequenceID=%s'
+        if isPass!=None:
+            ss_FirstPass+= '\n    AND isPass=%s'
+            v.append(isPass)
+        if startRange!=None:
+            ss_FirstPass+= '\n    AND endTimestamp>%s'
+            v.append(startRange)
+        if endRange!=None:
+            ss_FirstPass+= '\n    AND endTimestamp<%s'   
+            v.append(endRange)
+        if SNlist!=None:
+            ss_FirstPass+= '\n    AND (    SN=%s'
+            ss_FirstPass+= '\n          OR SN=%s'*(len(SNlist)-1)
+            ss_FirstPass+= '\n )'
+            v+= SNlist
+        ss_FirstPass+= '\n GROUP BY SN'
+        ss_FirstPass+= '\n )'
+      
+      
+        ss_TestRunFirstPass =   'TestRunFirstPass AS'
+        ss_TestRunFirstPass+= '\n (SELECT TestRun.* FROM TestRun, FirstPass'
+        ss_TestRunFirstPass+= '\n  WHERE TestRun.SN = FirstPass.SN'
+        ss_TestRunFirstPass+= '\n    AND TestRun.endTimestamp = FirstPass.endTimeStamp'
+        ss_TestRunFirstPass+= '\n )'
+        
+        s = 'WITH '+ss_FirstPass+'\n ,'+ss_TestRunFirstPass + '\n SELECT * from TestRunFirstPass;'
+        
+        return self.sql.quickSqlRead(s,v,False)
+    
+    
+    def getTestRunData_last(self,testSequenceID,startRange=None,endRange=None,SNlist=None,isPass=None):    
         v = [testSequenceID]
         
         ss_LastPass =   'LastPass AS'
         ss_LastPass+= '\n (SELECT SN,MAX(endTimestamp) AS endTimestamp FROM TestRun'
         ss_LastPass+= '\n  WHERE testSequenceID=%s'
+        if isPass!=None:
+            ss_LastPass+= '\n    AND isPass=%s'
+            v.append(isPass)
         if startRange!=None:
             ss_LastPass+= '\n    AND endTimestamp>%s'
             v.append(startRange)
@@ -46,7 +111,6 @@ class DataMiningApi:
             ss_LastPass+= '\n          OR SN=%s'*(len(SNlist)-1)
             ss_LastPass+= '\n )'
             v+= SNlist
-        
         ss_LastPass+= '\n GROUP BY SN'
         ss_LastPass+= '\n )'
       
@@ -60,6 +124,20 @@ class DataMiningApi:
         s = 'WITH '+ss_LastPass+'\n ,'+ss_TestRunLastPass + '\n SELECT * from TestRunLastPass;'
         
         return self.sql.quickSqlRead(s,v,False)
+     
+    
+        
+    def getTestRunData(self,testSequenceID,startRange=None,endRange=None,SNlist=None,isPass=None,firstOrLastOnly='last'):    
+    
+        if firstOrLastOnly==None:
+            return self.getTestRunData_all(testSequenceID,startRange,endRange,SNlist,isPass)
+        elif firstOrLastOnly=='first':
+            return self.getTestRunData_first(testSequenceID,startRange,endRange,SNlist,isPass)
+        elif firstOrLastOnly=='last':
+            return self.getTestRunData_last(testSequenceID,startRange,endRange,SNlist,isPass)
+        else:
+            raise Exception('getTestRunData: Invalid parameter for firstOrLastOnly')
+        
     
     def getComponents(self,testRunID):
         d = {}
