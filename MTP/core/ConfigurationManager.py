@@ -144,8 +144,6 @@ class ConfigurationManager:
         """
         | Gets a string with the full path to the folder for the test run, previously created with *initTestRunFolder*
         """
-        if self.getIsMemoryOnly():
-            raise Exception('Attempting to use TestRunFolder while isMemoryOnly flag is set')
         return self.testRunFolderFullPath
 
 

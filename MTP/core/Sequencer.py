@@ -291,13 +291,13 @@ class Sequencer:
                         self.numericDictionary = {}
                     self.dependencyDict = self.configurationManager.getDependencyDict()
                     
-                    self.fileDictionary = {}
-                    for pointerID, fileRelativePath in self.filePointerDictionary.iteritems():
-                        fileFullPath = os.path.join(self.testRunFolder,fileRelativePath)
-                        fileData = pUtils.quickFileRead(fileFullPath,'rb')
-                        self.fileDictionary[pointerID] = pUtils.pPack(fileData)
-                    
+                    self.fileDictionary = {}  
                     if self.isMemoryOnly==False:
+                        for pointerID, fileRelativePath in self.filePointerDictionary.iteritems():
+                            fileFullPath = os.path.join(self.testRunFolder,fileRelativePath)
+                            fileData = pUtils.quickFileRead(fileFullPath,'rb')
+                            self.fileDictionary[pointerID] = pUtils.pPack(fileData)
+                         
                         ### Write data file
                         self.writeTestRunDataFiles()
 
