@@ -206,6 +206,18 @@ class MtpGui(QtGui.QWidget):
             entry['parent'] = self
             self.webKitWindow = Window_webKit_2(**entry)
             self.webKitWindow.show()
+       
+       
+        elif entry['command']=='webKitWindow_reload':
+            self.webKitWindow.reload()
+        
+        
+        elif entry['command']=='webKitWindow_change':
+            entry.pop('command')
+            self.webKitWindow.html = entry ['html']
+            self.webKitWindow.urlBase = entry['urlBase']
+            self.webKitWindow.reload()
+        
             
         elif entry['command']=='closeWebKitWindow':
             self.webKitWindow.close()            
@@ -458,8 +470,8 @@ class Window_webKit(QtGui.QDialog):
 
 class Window_webKit_2(QtGui.QDialog):
     def __init__(self,html,urlBase,queue,parent=None,sizeX=400,sizeY=300):
-        #self.html = html
-        #self.urlBase = urlBase
+        self.html = html
+        self.urlBase = urlBase
         self.queue = queue
         #self.parent = parent
         
@@ -480,10 +492,14 @@ class Window_webKit_2(QtGui.QDialog):
         self.layout.addWidget(button)
         button.clicked.connect(self.closing)
     
+    def reload(self):
+        self.view.setHtml(self.html,QtCore.QUrl(self.urlBase))
+        
     def closing(self):
         self.queue.put( (None,None))
         self.close()
         
+
         
 if __name__ == '__main__':   
     app = QtGui.QApplication([])
