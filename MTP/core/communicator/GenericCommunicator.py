@@ -262,23 +262,21 @@ class GenericCommunicator(object):
             None
         """
         
-        
+        if self.isMemoryOnly==true: return
         
         with self.logFileBufferLock:
             
             self.logFileBuffer += str(data)
             
-            if self.isMemoryOnly==False:
-        
-                if len(self.logFileBuffer)>self.logFileBufferSize or forceFlush==True:
-                    
-                    logFileFolderFullPath = os.path.join(self.testRunFolder,'log')
-                    if not os.path.exists(logFileFolderFullPath):
-                        pUtils.createDirectory(logFileFolderFullPath)
-                    
-                    logFileFullPath = os.path.join(logFileFolderFullPath,self.commInstanceID+'.log')
-                    pUtils.quickFileWrite(logFileFullPath,self.logFileBuffer,'at')
-                    self.logFileBuffer = ''
+            if len(self.logFileBuffer)>self.logFileBufferSize or forceFlush==True:
+                
+                logFileFolderFullPath = os.path.join(self.testRunFolder,'log')
+                if not os.path.exists(logFileFolderFullPath):
+                    pUtils.createDirectory(logFileFolderFullPath)
+                
+                logFileFullPath = os.path.join(logFileFolderFullPath,self.commInstanceID+'.log')
+                pUtils.quickFileWrite(logFileFullPath,self.logFileBuffer,'at')
+                self.logFileBuffer = ''
     
             
     def updateParseBuffer(self,data):
