@@ -262,7 +262,7 @@ class GenericCommunicator(object):
             None
         """
         
-        if self.isMemoryOnly==true: return
+        if self.isMemoryOnly==True: return
         
         with self.logFileBufferLock:
             
