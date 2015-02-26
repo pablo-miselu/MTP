@@ -29,7 +29,11 @@ class DataMiningApi:
         self.sql = SQL(**dbConfig)
   
   
-    def getTestRunData_all(self,testSequenceID,startRange=None,endRange=None,SNlist=None,isPass=None):    
+    def getTestRunData_all(self,testSequenceID,startRange=None,endRange=None,SNlist=None,isPass=None):
+        """
+        Used only by getTestRunData. For more information see getTestRunData docstring
+        """
+        
         v = [testSequenceID]
     
         ss_TestRunAllPass =   'TestRunAllPass AS'
@@ -56,7 +60,11 @@ class DataMiningApi:
         return self.sql.quickSqlRead(s,v,False)
     
     
-    def getTestRunData_first(self,testSequenceID,startRange=None,endRange=None,SNlist=None,isPass=None):    
+    def getTestRunData_first(self,testSequenceID,startRange=None,endRange=None,SNlist=None,isPass=None):
+        """
+        Used only by getTestRunData. For more information see getTestRunData docstring
+        """
+        
         v = [testSequenceID]
         
         ss_FirstPass =   'FirstPass AS'
@@ -91,7 +99,11 @@ class DataMiningApi:
         return self.sql.quickSqlRead(s,v,False)
     
     
-    def getTestRunData_last(self,testSequenceID,startRange=None,endRange=None,SNlist=None,isPass=None):    
+    def getTestRunData_last(self,testSequenceID,startRange=None,endRange=None,SNlist=None,isPass=None):
+        """
+        Used only by getTestRunData. For more information see getTestRunData docstring
+        """
+        
         v = [testSequenceID]
         
         ss_LastPass =   'LastPass AS'
@@ -127,8 +139,39 @@ class DataMiningApi:
      
     
         
-    def getTestRunData(self,testSequenceID,startRange=None,endRange=None,SNlist=None,isPass=None,firstOrLastOnly='last'):    
-    
+    def getTestRunData(self,testSequenceID,startRange=None,endRange=None,SNlist=None,isPass=None,firstOrLastOnly='last'):
+        """
+        Queries the database and returns a table containing the data from TestRun table after having been
+        filtered by the arguments.
+        
+        Args:
+        * testSequenceID (str): testSequenceID to filter by
+        
+        * startRange (str): The start of the time range to mine.
+                            The format should be the same as accepted by the database manager.
+                            The timestamp when the test was ended is the one used.
+        * endRange (str):   The start of the time range to mine.
+                            The format should be the same as accepted by the database manager.
+                            The timestamp when the test was ended is the one used.
+        * SNlist (list): A list of SN (str) to filter by
+        * isPass (bool+None): If True:  filter for only testruns that are a PASS
+                              If False: filter for only testruns that are a FAIL
+                              If None: Don't filter, get them both
+        * firstOrLastOnly (str): If 'first': Get only the first test run per SN (from the filtered set)
+                                 If 'last':  Get only the last  test run per SN (from the filtered set)
+                                 If  None:   Get all test runs of each SN (from the filtered set)
+        
+        Returns:
+            A table (list of tuples). Containing the resulting data
+        
+        | WARNING: When using firstOrLastOnly keep in mind that such will take either the first or last test run per serial number from the set of records that is
+        | filtered by the other parameters, such as  isPass, startRange and endRange, etc.
+        | For example, if you want for each SN, the last of the PASS test runs within a range, you can get it by using these parameters.
+        | But if you want for each SN  within a range, the last test run and only if such last testrun was a PASS, then you need to leave
+        | isPass=None and firstOrLastOnly='last'. Then filter out afterwards those that were a FAIL. Because if the last testrun within a range is a FAIL,
+        | but there is an earlier record that passed, the isPass flag would filter the FAIL and pick the earlier PASS.
+        """
+        
         if firstOrLastOnly==None:
             return self.getTestRunData_all(testSequenceID,startRange,endRange,SNlist,isPass)
         elif firstOrLastOnly=='first':
@@ -140,6 +183,18 @@ class DataMiningApi:
         
     
     def getComponents(self,testRunID):
+        """
+        Queries the database and returns the contents of the Components table for
+        the given TestRunID.
+        
+        Args:
+        
+        * testRunID (str): The testRunID of the testRun of interest
+            
+        Returns:
+            A dictionary containing the key,value pairs of data from the Components table
+        """
+        
         d = {}
         s = 'SELECT key,value FROM Components'
         s+='\n WHERE %s=testRunID'
@@ -448,8 +503,29 @@ class DataMiningApi:
         return d
 
  
-###############################################################################################################3333
     def getTestEntryList(self,testSequenceID):
+        """
+        | Queries the database to find out the list of test for a given testSequenceID.
+        | It uses the last time that a unit ran and pass hte station.
+        
+        Args:
+        
+        * testSequenceID (str): The testSequenceID to use
+            
+        Returns:
+            A nested list of the form:
+        
+        .. code-block:: python
+        
+            [
+                testName, [tesrMeasurementName,...,testMeasurementName],
+                .
+                .
+                .
+                testName, [tesrMeasurementName,...,testMeasurementName],
+            ]
+        """
+        
         s =   ' SELECT testRunID FROM TestRun'
         s+= '\n WHERE testSequenceID = %s'
         s+= '\n   AND isPass = true'
@@ -470,49 +546,52 @@ class DataMiningApi:
         v = [testRunId]
         data = self.sql.quickSqlRead(s,v)
         
+        
         testEntryList = []
         testEntry = [0,[]]
-        buffer0 = ''
         for row in data:
             if testEntry[0]== row[0]:
                 testEntry[1].append(row[1])
             else:
-                if testEntry[0]!= 0:
+                if testEntry[0]!= 0: #If is not the very first cycle
                     testEntryList.append(testEntry)
                 
-                testEntry = [0,[]]
-                testEntry[0] = row[0]
-                testEntry[1].append(row[1])
+                testEntry = [row[0],[row[1]]]
+
         testEntryList.append(testEntry)
-        
-        
         return testEntryList
     
-    def getHorizontalaizedTestMeasurementData(self,testSequenceID,testEntryList,isPass=None,startRange=None,endRange=None,isLast=True,SNlist=None):
+    def getHorizontalaizedTestMeasurementData(self,testSequenceID,testEntryList,isPass=None,startRange=None,endRange=None,isLast=False,SNlist=None):
         """
-        | THIS FUNCTION IS UNDER DEVELOPMENT
-        |
         Queries the database and returns a table containing
         *Horizontalized* Test Measurement Data
         
         Args:
         * testSequenceID (str): testSequenceID to filter by
-        * testEntryList (list): a list of the format <TO FILL IN> that indicates which test and test measurements to include
-        * isPass (bool): isPass to filter by
+        * testEntryList (list): A nested list containing the test and test measurement names (see getTestEntryList docString for format details.
+        * isPass (bool+None): If True:  filter for only testruns that are a PASS
+                              If False: filter for only testruns that are a FAIL
+                              If None: Don't filter, get them both
         * startRange (str): The start of the time range to mine.
                             The format should be the same as accepted by the database manager.
                             The timestamp when the test was ended is the one used.
         * endRange (str):   The start of the time range to mine.
                             The format should be the same as accepted by the database manager.
                             The timestamp when the test was ended is the one used.
+        * isLast (bool): If true: only the last testrun, within the filtered subset, of each SN would be used.
+                         If false: all testruns, within the filtered subset, of each SN would be used.
+        * SNlist (list): A list of SN (str) to filter by
         
         
         Returns:
-            A table...dictionary of the form:
+            A tuple. First element is a table with the data. Second element contain the header for each of the colums.
         
-        .. code-block:: python
-        
-            ###TBD
+        | WARNING: When using isLast, keep in mind that such will take the las test run per serial number from the set of records that is
+        | filtered by the other parameters, such as  isPass, startRange and endRange.
+        | For example, if you want for each SN, the last of the PASS test runs within a range, you can get it by using these parameters.
+        | But if you want for each SN  within a range, the last test run and only if such last testrun was a PASS, then you need to leave
+        | isPass=None and isLast=True. Then filter out afterwards those that were a FAIL. Because if the last testrun within a range is a FAIL,
+        | but there is an earlier record that passed, the isPass flag would filter the FAIL and pick the earlier PASS.
         """
         
         
@@ -574,7 +653,7 @@ class DataMiningApi:
         ss_TestMeasurementSubset+= '\n )'
         
         
-        ss_Horizontalize,v_Horizontalize = genHorizontalizeString('TableH','TestMeasurementSubset',testEntryList)
+        ss_Horizontalize,v_Horizontalize = self.genHorizontalizeString('TableH','TestMeasurementSubset',testEntryList)
             
         if isLast:
             s = 'WITH '+ ss_LastPass
@@ -600,106 +679,63 @@ class DataMiningApi:
             
         v += v_Horizontalize
 
-        return self.sql.quickSqlRead(s,v,True)
+        ####   DEBUG   #############
+        #ss = s
+        #for i in range(len(v)):
+        #    ss=ss.replace('%s',"'"+v[i]+"'",1)
+        #print ss
+        #print v
+        ############################
         
-############################################################################################################################
+        return self.sql.quickSqlRead(s,v,True)
 
-def genHorizontalizeString(tableName,srcTableName,testEntryList):
-    v = []
-    s = ''
-    s+= tableName
-    s+= '\n AS (SELECT t1.testRunID,t1.SN'
+    def genHorizontalizeString(self,tableName,srcTableName,testEntryList):
+        """
+           | Cretes a SQL string used to "orizontalize" and report all test measurements
+           
+           Args:
+           
+           * tableName (str): The name of the Table to crate
+           * srcTableName (str): The name of the Table to use as source
+           * testEntryList (list): A nested list containing the test and test measurement names (see getTestEntryList docString for format details.
+           
+           Returns:
+               A string with the SQL string
+        """
+        
+        v = []
+        s = ''
+        s+= tableName
+        s+= '\n AS (SELECT t1.testRunID,t1.SN'
+        
+        for testEntry in testEntryList:
+            testName = testEntry[0]
+            for testMeasurementName in testEntry[1]:
+                s+= '\n,'+testName+'_'+testMeasurementName
     
-    for testEntry in testEntryList:
-        testName = testEntry[0]
-        for testMeasurementName in testEntry[1]:
-            s+= '\n,'+testName+'_'+testMeasurementName
-
-    i = 1
-    isFirst = True
-    for testEntry in testEntryList:
-        testName = testEntry[0]
-        for testMeasurementName in testEntry[1]:
-            if isFirst:
-                s+= '\n FROM ('
-            else:
-                s+= '\n FULL OUTER JOIN\n'
+        i = 1
+        isFirst = True
+        for testEntry in testEntryList:
+            testName = testEntry[0]
+            for testMeasurementName in testEntry[1]:
+                if isFirst:
+                    s+= '\n FROM '
+                else:
+                    s+= '\n FULL OUTER JOIN\n'
+                    
+                s+=   '(SELECT testRunID,SN, val AS '+testName+'_'+testMeasurementName+' FROM '+srcTableName
+                s+= '\n WHERE testName=%s'
+                s+= '\n   AND testMeasurementName=%s'
+                s+= '\n) AS '+'t'+str(i)        
+              
+                if not isFirst:
+                    s+= ' ON t1.testRunID='+'t'+str(i)+'.testRunID'
                 
-            s+=   '(SELECT testRunID,SN, val AS '+testName+'_'+testMeasurementName+' FROM '+srcTableName
-            s+= '\n WHERE testName=%s'
-            s+= '\n   AND testMeasurementName=%s'
-            s+= '\n) AS '+'t'+str(i)        
-          
-            if not isFirst:
-                s+= ' ON t1.testRunID='+'t'+str(i)+'.testRunID'
-            
-            v.append(testName)
-            v.append(testMeasurementName)
-            i+=1
-            isFirst = False
-    
-    s+='\n )'
-    s+='\n )'
-    
-    return s,v
-
-
-
-#def genHorizontalizeString(tableName,srcTableName,testEntryList):
-#    v = []
-#    s = ''
-#    s+= tableName
-#    s+= '\n AS (SELECT t1.testRunID,t1.SN'
-#    
-#    for testEntry in testEntryList:
-#        testName = testEntry[0]
-#        for testMeasurementName in testEntry[1]:
-#            s+= '\n,'+testName+'_'+testMeasurementName
-#
-#    i = 1
-#    isFirst = True
-#    for testEntry in testEntryList:
-#        testName = testEntry[0]
-#        for testMeasurementName in testEntry[1]:
-#            if isFirst:
-#                isFirst = False
-#                s+= '\n FROM '
-#            else:
-#                s+= '\n , '
-#                
-#            s+=   '(SELECT testRunID,SN, val AS '+testName+'_'+testMeasurementName+' FROM '+srcTableName
-#            s+= '\n WHERE testName=%s'
-#            s+= '\n   AND testMeasurementName=%s'
-#            s+= '\n) AS '+'t'+str(i)        
-#            
-#            v.append(testName)
-#            v.append(testMeasurementName)
-#            i+=1
-#    
-#    
-#    i = 1
-#    isFirst = True
-#    for testEntry in testEntryList:
-#        testName = testEntry[0]
-#        for testMeasurementName in testEntry[1]:
-#            if i==1:
-#                i+=1
-#                continue
-#            
-#            if isFirst:
-#                isFirst = False
-#                s+= '\n WHERE '
-#            else:
-#                s+= '\n   AND '
-#                
-#            s+= 't1.testRunID='+'t'+str(i)+'.testRunID'
-#            i+=1
-#           
-#    s+='\n )'
-#    
-#    return s,v
-
-############################################################
-
-
-    
+                v.append(testName)
+                v.append(testMeasurementName)
+                i+=1
+                isFirst = False
+        
+        s+='\n )'
+        
+        return s,v
