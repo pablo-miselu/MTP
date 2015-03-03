@@ -103,15 +103,74 @@ class GenericCommunicator(object):
             None
         """
         
-        if self.status!=0: return #already started
+        if self.status==0:
+            exec('from MTP.drivers.%s import %s' % (self.driverName,self.driverName))
+            exec('self.driver = '+self.driverName+'(**self.driverConfigParams)')
+            self.launchPollingThread(self.pollingThreadInterval)
+            self.status = 1
+            return
+    
+    def close(self):
+        """
+        | Closes the connection.
+        |  Stops the polling thread.
+        |  Flushes the log buffer.
         
-        self.status =  1
+        Args:
+            None
+            
+        Returns:
+            None
+        """
+        self.endPollingThread()
+        self.flushLogFileBuffer()
+        self.status = 0
         
-        exec('from MTP.drivers.%s import %s' % (self.driverName,self.driverName))
-        exec('self.driver = '+self.driverName+'(**self.driverConfigParams)')
-        self.launchPollingThread(self.pollingThreadInterval)
+    def signalEndPollingThread(self):
+        """
+        | Signals the polling thread to finish (see :ref:`label_PollingThread`).
         
+        Args:
+            None
+            
+        Returns:
+            None
+        """
+        if self.status!=1: return
+        
+        self.pollingThread.endThread()
         self.status = 2
+        
+    def waitForPollinThreadToEnd(self):
+        """
+        | Waits for the polling thread to finish (see :ref:`label_PollingThread`).
+        | Before calling this method *signalEndPollingThread* should be called. 
+        
+        Args:
+            None
+            
+        Returns:
+            None
+        """
+        if self.status!=2: return
+        
+        self.pollingThread.join()
+        self.driver.close()
+
+    def endPollingThread(self):
+        """
+        | Signals the polling thread to finish (see :ref:`label_PollingThread`).
+        | Waits for the polling thread to finish (see :ref:`label_PollingThread`).
+        
+        Args:
+            None
+            
+        Returns:
+            None
+        """
+        self.signalEndPollingThread()
+        self.waitForPollinThreadToEnd()
+        
 
     def log (self,msg,logLevel):
         """
@@ -214,21 +273,6 @@ class GenericCommunicator(object):
             
         raise Exception('Communicator: Did not receive expected answer within timeout.regex='+str(regex))
     
-        
-    def close(self):
-        """
-        | Closes the connection.
-        |  Stops the polling thread.
-        |  Flushes the log buffer.
-        
-        Args:
-            None
-            
-        Returns:
-            None
-        """
-        self.endPollingThread()
-        self.flushLogFileBuffer()
         
     
     def formatLogMessage(self,msg,logLevel):
@@ -381,47 +425,6 @@ class GenericCommunicator(object):
         self.pollingThread.start()
         
             
-    def endPollingThread(self):
-        """
-        | Signals the polling thread to finish (see :ref:`label_PollingThread`).
-        | Waits for the polling thread to finish (see :ref:`label_PollingThread`).
-        
-        Args:
-            None
-            
-        Returns:
-            None
-        """
-        self.signalEndPollingThread()
-        self.waitForPollinThreadToEnd()
+   
     
-    def signalEndPollingThread(self):
-        """
-        | Signals the polling thread to finish (see :ref:`label_PollingThread`).
-        
-        Args:
-            None
-            
-        Returns:
-            None
-        """
-        if self.status!=2: return
-        
-        self.pollingThread.endThread()
-        self.status = 3
-        
-    def waitForPollinThreadToEnd(self):
-        """
-        | Waits for the polling thread to finish (see :ref:`label_PollingThread`).
-        | Before calling this method *signalEndPollingThread* should be called. 
-        
-        Args:
-            None
-            
-        Returns:
-            None
-        """
-        if self.status!=3: return
-        
-        self.pollingThread.join()
-        self.driver.close()
+   
