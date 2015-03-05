@@ -54,6 +54,8 @@ class SequencerThread (threading.Thread):
         
         siteID = sys.argv[1]
         configData = json.loads(pUtils.quickFileRead(testStationConfigFileFullPath))
+        configData ['testSequenceID'] = sys.argv[3].split('.')[0]
+        
         limitDict = json.loads(pUtils.quickFileRead(limitFileFullPath))
         dbConfig =  json.loads(pUtils.quickFileRead(dbConfigFileFullPath))
      
