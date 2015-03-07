@@ -518,11 +518,11 @@ class DataMiningApi:
         .. code-block:: python
         
             [
-                testName, [tesrMeasurementName,...,testMeasurementName],
+                [ testName, [tesrMeasurementName,...,testMeasurementName] ],
                 .
                 .
                 .
-                testName, [tesrMeasurementName,...,testMeasurementName],
+                [ testName, [tesrMeasurementName,...,testMeasurementName] ],
             ]
         """
         
@@ -535,7 +535,11 @@ class DataMiningApi:
         v = [testSequenceID]
         
         data = self.sql.quickSqlRead(s,v)
-        testRunId = data[0][0]
+        
+        try:
+            testRunId = data[0][0]
+        except:
+            return []
         
         s = 'SELECT testName,testMeasurementName'
         s+= '\n FROM TestMeasurement'
@@ -706,7 +710,7 @@ class DataMiningApi:
         v = []
         s = ''
         s+= tableName
-        s+= '\n AS (SELECT t1.testRunID,t1.SN'
+        s+= '\n AS (SELECT t0.testRunID,t0.SN'
         
         for testEntry in testEntryList:
             testName = testEntry[0]
@@ -719,17 +723,15 @@ class DataMiningApi:
             testName = testEntry[0]
             for testMeasurementName in testEntry[1]:
                 if isFirst:
-                    s+= '\n FROM '
-                else:
-                    s+= '\n FULL OUTER JOIN\n'
+                    s+= '\n FROM (SELECT DISTINCT testRunID,SN FROM '+srcTableName+' ) AS t0'
+                s+= '\n FULL OUTER JOIN\n'
                     
                 s+=   '(SELECT testRunID,SN, val AS '+testName+'_'+testMeasurementName+' FROM '+srcTableName
                 s+= '\n WHERE testName=%s'
                 s+= '\n   AND testMeasurementName=%s'
                 s+= '\n) AS '+'t'+str(i)        
               
-                if not isFirst:
-                    s+= ' ON t1.testRunID='+'t'+str(i)+'.testRunID'
+                s+= ' ON t0.testRunID='+'t'+str(i)+'.testRunID'
                 
                 v.append(testName)
                 v.append(testMeasurementName)
