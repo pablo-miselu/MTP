@@ -741,3 +741,100 @@ class DataMiningApi:
         s+='\n )'
         
         return s,v
+    
+    def getFailureData(self,testSequenceID,startRange=None,endRange=None,SNlist=None):
+        """
+        Queries the database and returns an structure with the details of the failures.
+        
+        Args:
+        * testSequenceID (str): testSequenceID to filter by
+        
+        * startRange (str): The start of the time range to mine.
+                            The format should be the same as accepted by the database manager.
+                            The timestamp when the test was ended is the one used.
+        * endRange (str):   The start of the time range to mine.
+                            The format should be the same as accepted by the database manager.
+                            The timestamp when the test was ended is the one used.
+        * SNlist (list): A list of SN (str) to filter by
+        
+        Returns:
+            A structure of the form:
+            
+            .. code-block:: python
+        
+            [
+                { fieldName1:fieldValue1,...,errorDict{testName_testMEasurementName:stringMeasurement,...}  },
+                .
+                .
+                .
+            ]
+            
+        """
+        
+        isPass = False
+        v = [testSequenceID]
+        ss_TestRunAllPass =   'TestRunAllPass AS'
+        ss_TestRunAllPass+= '\n (SELECT * FROM TestRun'
+        ss_TestRunAllPass+= '\n  WHERE testSequenceID=%s'
+        if isPass!=None:
+            ss_TestRunAllPass+= '\n    AND isPass=%s'
+            v.append(isPass)
+        if startRange!=None:
+            ss_TestRunAllPass+= '\n    AND endTimestamp>%s'
+            v.append(startRange)
+        if endRange!=None:
+            ss_TestRunAllPass+= '\n    AND endTimestamp<%s'
+            v.append(endRange)
+        if SNlist!=None:
+            ss_TestRunAllPass+= '\n    AND (    SN=%s'
+            ss_TestRunAllPass+= '\n          OR SN=%s'*(len(SNlist)-1)
+            ss_TestRunAllPass+= '\n )'
+            v+= SNlist
+        ss_TestRunAllPass+= '\n )'
+      
+        #s = 'WITH '+ss_TestRunAllPass+'\n SELECT * from TestRunAllPass;'
+        s = 'WITH '+ss_TestRunAllPass
+        s+= '\n SELECT TestRunAllPass.testRunID'
+        s+= '\n ,TestRunAllPass.SN'
+        s+= '\n ,TestRunAllPass.siteID'
+        s+= '\n ,TestRunAllPass.stationID'
+        s+= '\n ,TestRunAllPass.testSequenceID'
+        s+= '\n ,TestRunAllPass.startTimestamp'
+        s+= '\n ,TestRunAllPass.endTimestamp'
+        s+= '\n ,TestRunAllPass.lastTestEntered'
+        s+= '\n ,SubTestMeasurement.testName'
+        s+= '\n ,SubTestMeasurement.testMeasurementName'
+        s+= '\n ,SubTestMeasurement.stringMeasurement'
+        s+= '\n FROM TestRunAllPass'
+        s+= '\n  JOIN'
+        s+= '\n (SELECT testName,testMeasurementName,stringMeasurement,testRunID'
+        s+= '\n FROM TestMeasurement'
+        s+= '\n WHERE isPass=%s ) AS SubTestMeasurement'
+        v.append(isPass)
+        s+= '\n ON TestRunAllPass.testRunID = SubTestMeasurement.testRunID'
+        s+= '\n ORDER BY TestRunAllPass.testRunID ASC'
+        s+='\n ;'
+        
+        resultTable = self.sql.quickSqlRead(s,v,False)
+        
+        TEST_RUN_ID_INDEX = 0
+        SUB_HEADER = ['testRunID', 'SN','siteID','stationID','testSequenceID','startTimestamp','endTimestamp','lastTestEntered']
+        returnList = []
+        currentTestRunID = None
+        
+        
+        for entry in resultTable:
+            if currentTestRunID!=entry[TEST_RUN_ID_INDEX]:
+                currentTestRunID=entry[TEST_RUN_ID_INDEX]
+                
+                d1 = {}
+                d2 = {}
+                for i in range(len(SUB_HEADER)):
+                    d1[SUB_HEADER[i]] = entry[i]
+                d1['errorDict'] = d2
+                returnList.append(d1)
+                
+            offset = len(SUB_HEADER)
+            d2[ entry[offset]+'_'+entry[offset+1] ] = entry[offset+2]
+        
+        return returnList
