@@ -16,6 +16,7 @@
 from SQL import SQL
 import uuid
 import pUtils
+import os
 
 class DatabaseApi():
     """
@@ -219,7 +220,7 @@ class DatabaseApi():
 
     def getSubcomponentData(self,SN,testSequenceID):
         """
-        Retrieves the subcomponents for hte specified UUT
+        Retrieves the subcomponents for the specified UUT
         """
         s = 'SELECT key,value FROM Components,TestRun'
         s+= ' WHERE SN = %s'
@@ -238,3 +239,38 @@ class DatabaseApi():
             d.append({'processID':key,'SN':value}) 
             
         return d
+
+
+    def createDatabase(self,databaseName,owner):
+        """
+        Creates a database with the given name and owner
+        """
+        v = []
+        s = 'CREATE DATABASE "%s"' % databaseName
+        s+= '\n WITH OWNER = postgres'
+        #v.append(owner)
+        s+= '\n ENCODING = %s'
+        v.append('UTF8')
+        s+= '\n TABLESPACE = pg_default'
+        s+= '\n LC_COLLATE = %s'
+        v.append('en_US.UTF-8')
+        s+= '\n LC_CTYPE = %s'
+        v.append('en_US.UTF-8')
+        s+= '\n CONNECTION LIMIT = -1;'
+        
+        from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT        
+        self.sql.conn()
+        self.sql.cnx.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+        self.sql.execute(s,v)
+        self.sql.close()
+        
+        
+    
+    def setupMTPdatabase(self):
+        """ 
+        Assumes it is connected to an empty database and it sets it up as an MTP database.
+        """
+        fileFullPath = os.path.join(os.environ['MTP_TESTSTATION'],'MTP','scripts','initDB.sql')
+        s = pUtils.quickFileRead(fileFullPath)
+        v = []
+        self.sql.quickSqlWrite(s,v)
