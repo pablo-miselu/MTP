@@ -707,6 +707,9 @@ class DataMiningApi:
                A string with the SQL string
         """
         
+        if len(testEntry)==0:
+            raise Exception('testEntryList lenght cannot be zero')
+        
         v = []
         s = ''
         s+= tableName
@@ -744,7 +747,8 @@ class DataMiningApi:
     
     def getFailureData(self,testSequenceID,startRange=None,endRange=None,SNlist=None):
         """
-        Queries the database and returns an structure with the details of the failures.
+        Queries the database and returns a structure with the details of the failures.
+        Includes ALL test runs
         
         Args:
         * testSequenceID (str): testSequenceID to filter by
