@@ -745,7 +745,7 @@ class DataMiningApi:
         
         return s,v
     
-    def getFailureData(self,testSequenceID,startRange=None,endRange=None,SNlist=None):
+    def getDetailsFailureData(self,testSequenceID,startRange=None,endRange=None,SNlist=None):
         """
         Queries the database and returns a structure with the details of the failures.
         Includes ALL test runs
