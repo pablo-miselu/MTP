@@ -66,7 +66,9 @@ class Sequencer:
         self.limitManager = LimitManager(limitDict) 
         self.dbApi = DatabaseApi(dbConfig)
         self.routeController = RouteController(self.rcData,self.dbApi)  
-           
+        
+        self.testRunID = self.configurationManager.getTestRunID()
+        
         self.stationID = socket.gethostname()
         self.testSuiteID = self.configurationManager.getTestSuiteID()
         self.testSequenceID =  self.configurationManager.getTestSequenceID()
@@ -321,7 +323,8 @@ class Sequencer:
                                                 self.stringDictionary,
                                                 self.numericDictionary,
                                                 self.fileDictionary,
-                                                self.dependencyDict)
+                                                self.dependencyDict,
+                                                self.testRunID)
                         print 'Data submitted to the database'
                         
                         #RouteControl

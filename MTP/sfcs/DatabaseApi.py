@@ -30,7 +30,8 @@ class DatabaseApi():
                           stringDictionary,
                           numericDictionary,
                           fileDictionary,
-                          dependencyDict):   
+                          dependencyDict,
+                          testRunID=None):   
         """
         Submits the test run data to the database
         
@@ -49,7 +50,8 @@ class DatabaseApi():
         
         self.sql.conn()
         
-        testRunID = str(uuid.uuid4())
+        if testRunID==None:
+            testRunID = str(uuid.uuid4())
         
         
         s,v = self.prepsForTestRun(testRunSummary,testRunID)

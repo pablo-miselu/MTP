@@ -50,6 +50,8 @@ class ConfigurationManager:
         self.configData = configData
         self.guiApi = guiApi
         self.testStationRootFullPath = os.environ['MTP_TESTSTATION']
+       
+        self.testRunID = str(uuid.uuid4())
         
         ###   Dynamic Data   ###
         self.dependencyDict = {}
@@ -92,6 +94,7 @@ class ConfigurationManager:
         """
         | Creates the directory to be used for the test run.
         | It uses the value of self.SN .
+        | It uses the value of self.testRunID
         | The full path remains stored as an object variable.
         
         
@@ -103,12 +106,11 @@ class ConfigurationManager:
             A string with the full path to the folder for the test run
         """
 
-        
         if self.getIsMemoryOnly():
             raise Exception('Attempting to create TestRunFolder while isMemoryOnly flag is set')
-        self.uuid = uuid.uuid4()
+        
         testSequenceID = self.configData['testSequenceID']
-        self.testRunFolderName = testSequenceID+'_'+startTimestamp+'_'+self.SN+'_'+str(self.uuid)
+        self.testRunFolderName = testSequenceID+'_'+startTimestamp+'_'+self.SN+'_'+self.testRunID
         print 'testRunFolderName='+self.testRunFolderName
         self.testRunFolderFullPath = os.path.join(self.getTestStationRootFolder(),'TestRunDataStorage',self.testRunFolderName)
         
@@ -139,7 +141,13 @@ class ConfigurationManager:
         """
         return self.commDict
 
-
+    
+    def getTestRunID(self):
+        """
+        Gets a string with the testRunID
+        """
+        return self.testRunID
+    
     def getTestRunFolder(self):
         """
         | Gets a string with the full path to the folder for the test run, previously created with *initTestRunFolder*
