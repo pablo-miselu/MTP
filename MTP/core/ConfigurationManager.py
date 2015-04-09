@@ -79,16 +79,31 @@ class ConfigurationManager:
             exec('from MTP.core.communicator.'+commClassName+' import '+commClassName)
             exec('self.commDict[ID] = '+commClassName+'(ID,self)')
             
-            isStartOnInit = self.configData['communicators'][ID].get('isStartOnInit',True)
-            if isStartOnInit:
-                self.commDict[ID].start()
-                
             if ('isDefault' in self.configData['communicators'][ID] and
                 self.configData['communicators'][ID]['isDefault']):
                 self.commDict['default'] = self.commDict[ID]
                 
         return self.commDict
      
+    
+    def startCommunicatorsByConfig(self):
+        """
+        | Starts the communicators. Before calling this function *initCommunicators*  must be called first.
+            
+        Args:
+            None
+            
+        Returns:
+            None
+        """
+
+        for ID in self.commDict:
+            if ID=='default': continue
+            
+            isStartOnInit = self.configData['communicators'][ID].get('isStartOnInit',True)
+            if isStartOnInit:
+                self.commDict[ID].start()
+                
 
     def initTestRunFolder(self,startTimestamp):
         """

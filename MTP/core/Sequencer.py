@@ -197,6 +197,8 @@ class Sequencer:
                 
                 exec('from MTP.testSuites.'+self.testSuiteID+' import '+self.testSuiteID)
                 exec('self.testSuite = '+self.testSuiteID+'(self.configurationManager,self.limitManager)')
+                
+                self.configurationManager.startCommunicatorsByConfig()
  
                 for test in self.configData['testSequence']:
                     if test['cycles']==0: continue
