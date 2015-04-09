@@ -37,7 +37,7 @@ class SQL:
 
     def conn(self):
         """
-        Opens a connection used hte parameters passed on init. Stores as object variables the connection handle and the cursor handle.
+        Opens a connection using the parameters passed on init. Stores as object variables the connection handle and the cursor handle.
         
         Args:
             None
