@@ -276,3 +276,32 @@ class DatabaseApi():
         s = pUtils.quickFileRead(fileFullPath)
         v = []
         self.sql.quickSqlWrite(s,v)
+        
+    def getTestRunIDlist(self,startRange=None,endRange=None):
+        """
+        Returns a list of Test Run ID's for the given range
+        """
+         
+        def sqlAppend(first,noFirst,isFirst):
+            if isFirst:
+                return '\n '+first
+            return '\n '+noFirst    
+        
+        isFirst = True
+        
+        v = []
+        s = 'SELECT testRunID from TestRun'
+        if startRange!=None:
+            s+= sqlAppend('WHERE ','AND ',isFirst)+'endTimestamp > %s'
+            v.append(startRange)
+            isFirst = False
+        if endRange!=None:
+            s+= sqlAppend('WHERE ','AND ',isFirst)+'endTimestamp < %s'
+            v.append(endRange)
+            isFirst = False
+        s+= '\n ;'
+        
+        t = self.sql.quickSqlRead(s,v)
+        t = [item[0] for item in t]
+        return t
+        
