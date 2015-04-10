@@ -367,7 +367,11 @@ class Sequencer:
                     
                     isDefaultResultWindowEnable = True
                     if self.customResultWindow!=None:
-                        exec('isDefaultResultWindowEnable = self.testSuite.'+self.customResultWindow+'(allTestResult=self.allTestResult)')
+                        try:
+                            exec('isDefaultResultWindowEnable = self.testSuite.'+self.customResultWindow+'(allTestResult=self.allTestResult)')
+                        except:
+                            isDefaultResultWindowEnable = True
+                            print 'customResultWindow Exception'
                     
                     if isDefaultResultWindowEnable:
                         self.guiApi.sendMessage({'command':'pDialog',
