@@ -220,6 +220,8 @@ class ConfigurationManager:
         """
         return self.configData['testSequence']
     
+    
+    ###   Communicator parameters   ###
     def getDriverName(self,commInstanceID):
         """
         | Gets the class name of the driver to use by the communicator identified by *commInstanceID*.
@@ -242,7 +244,15 @@ class ConfigurationManager:
         """
         | Gets the *pollingThreadInterval*  parameter for the communicator identified by *commInstanceID*.
         """
-        return self.configData['communicators'][commInstanceID]['pollingThreadInterval']    
+        return self.configData['communicators'][commInstanceID]['pollingThreadInterval']
+
+    def getRetries(self,commInstanceID):
+        """
+        | Gets the *retries*  parameter for the communicator identified by *commInstanceID*.
+        """
+        return self.configData['communicators'][commInstanceID].get('retries',0)
+    ####################################
+    
     
     ###   Flags   ###
     def getFlags(self):

@@ -53,7 +53,6 @@ class PacketCommunicator(GenericCommunicator):
         self.packetBufferLock = threading.Lock()  
         super(PacketCommunicator, self).__init__(commInstanceID,configurationManager)
       
-      
     def pollingFunction(self):
         """
         | Reads from the specific instantiated driver (see :ref:`label_drivers`).
@@ -163,8 +162,15 @@ class PacketCommunicator(GenericCommunicator):
             self.flushRawBuffer()
             self.flushPacketBuffer()
         
-        self.transmit(msg)
-        return self.receive(regex,timeout)
+    
+        for i in range (self.retries+1):
+            try:
+                self.transmit(msg)
+                return self.receive(regex,timeout)
+            except Exception,e:
+                pass        
+        raise Exception (str(e))
+    
 
     def updateRawBuffer(self,data=None,bytesToRemove=None):
         """

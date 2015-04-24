@@ -65,6 +65,7 @@ class GenericCommunicator(object):
             self.pollingThreadInterval = configurationManager.get('pollingThreadInterval',1)
             
             self.readRetryInterval = configurationManager.get('readRetryInterval',1)
+            self.retries = configurationManager.get('retries',0)
             
         else:
             
@@ -81,7 +82,11 @@ class GenericCommunicator(object):
             self.pollingThreadInterval = configurationManager.getPollingThreadInterval(commInstanceID)
             
             self.readRetryInterval = configurationManager.getReadRetryInterval(commInstanceID)
+            self.retries = configurationManager.getRetries(commInstanceID)
+           
+           
             self.configurationManager = configurationManager
+           
             
             
         ###   End of handling of different instance types for configurationManager   ###    
@@ -89,7 +94,6 @@ class GenericCommunicator(object):
         self.logFileBufferLock = threading.Lock()
         self.parseBufferLock = threading.Lock()
         self.pollingThreadLock = threading.Lock()
-        
 
 
     def start(self):
@@ -222,8 +226,14 @@ class GenericCommunicator(object):
                     break
             self.flushParseBuffer()
         
-        self.transmit(msg)
-        return self.receive(regex,timeout)
+        
+        for i in range (self.retries+1):
+            try:
+                self.transmit(msg)
+                return self.receive(regex,timeout)
+            except Exception,e:
+                pass        
+        raise Exception (str(e))
         
     
     def transmit(self,msg):
