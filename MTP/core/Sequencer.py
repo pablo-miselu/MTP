@@ -210,7 +210,12 @@ class Sequencer:
                         self.logAll('Start of '+test['testName']+' '+str(self.j)+','+str(self.i),0)
                         
                         testStartTimestamp = pUtils.getTimeStamp()
-                        exec('measurementDict = self.testSuite.'+test['testName']+'()')
+                        try:
+                            exec('measurementDict = self.testSuite.'+test['testName']+'()')
+                        except Exception,e:
+                            measurementDict = {'EXCEPTION':str(e)}
+                        
+                            
                         testEndTimestamp = pUtils.getTimeStamp()
                         
                         testResult = self.limitManager.checkLimits(test['testName']+'_'+str(self.i),measurementDict,testStartTimestamp,testEndTimestamp)
