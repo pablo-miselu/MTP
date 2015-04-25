@@ -198,8 +198,15 @@ class Sequencer:
                 exec('from MTP.testSuites.'+self.testSuiteID+' import '+self.testSuiteID)
                 exec('self.testSuite = '+self.testSuiteID+'(self.configurationManager,self.limitManager)')
                 
-                self.configurationManager.startCommunicatorsByConfig()
- 
+                try:
+                    self.configurationManager.startCommunicatorsByConfig()
+                except Exception,e:
+                    print 'Failed to startCommunicatorsByConfig'
+                    self.commDict = self.configurationManager.getCommDict()
+                    self.lastTestEntered = 'startCommunicatorsByConfig'
+                    print 'commDict='+str(self.commDict)
+                    raise Exception('Failed startCommunicatorsByConfig:'+str(e))
+                
                 for test in self.configData['testSequence']:
                     if test['cycles']==0: continue
                     
