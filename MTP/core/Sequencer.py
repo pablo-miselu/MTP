@@ -67,20 +67,23 @@ class Sequencer:
         self.dbApi = DatabaseApi(dbConfig)
         self.routeController = RouteController(self.rcData,self.dbApi)  
         
+        self.stationID = socket.gethostname()
         self.testRunID = self.configurationManager.getTestRunID()
         
-        self.stationID = socket.gethostname()
+        
         self.testSuiteID = self.configurationManager.getTestSuiteID()
         self.testSequenceID =  self.configurationManager.getTestSequenceID()
         self.testStationRootFolder = self.configurationManager.getTestStationRootFolder()
-        self.isAutomaticSNdialog = self.configurationManager.getIsAutomaticSNdialog()
-        self.isSkipBeginningRCcheck = self.configurationManager.getIsSkipBeginningRCcheck()
         self.isMemoryOnly = self.configurationManager.getIsMemoryOnly()
         self.isStopOnFail = self.configurationManager.getIsStopOnFail()
         self.wholeCycles = self.configurationManager.getWholeCycles()
-        self.isRouteControllerEnable = self.configurationManager.getIsRouteControlEnable()
-        self.isDatabaseEnable = self.configurationManager.getIsDatabaseEnable()
         self.customResultWindow = self.configurationManager.getCustomResultWindow()
+    
+        self.uutSNregex = self.configurationManager.getUutSNregex()
+        self.isRouteControllerEnable = self.configurationManager.getIsRouteControlEnable()
+        self.isSkipBeginningRCcheck = self.configurationManager.getIsSkipBeginningRCcheck()
+        self.isAutomaticSNdialog = self.configurationManager.getIsAutomaticSNdialog()        
+        self.isDatabaseEnable = self.configurationManager.getIsDatabaseEnable()    
         
         #Init clean reusable variables from guiApi (e.g. queues)
         self.guiApi.sendMessage({'command':'init'})
@@ -90,33 +93,8 @@ class Sequencer:
         ###   End of init of object variables   ###
         
         
+        self.automaticSN()
         
-        dependencyDict = {}
-        ###   Start of automatic SN's handle   ###
-        if self.isAutomaticSNdialog:
-            
-            uutSNregex = self.routeController.getUutSNregex(self.testSequenceID)
-            tt = None
-            while tt==None:
-                self.guiApi.sendMessage({'command':'pDialog','msg':'SN for UUT','inputHeight':30})
-                t = self.guiApi.waitForDialogReturn()
-              
-                tt = re.match(uutSNregex,t[1])
-            self.configurationManager.setSN(t[1])
-          
-            
-            if self.routeController.isStartNode(self.testSequenceID):
-                processDependencyList = self.routeController.getDependencyList(self.testSequenceID)
-                for processDependency in processDependencyList:
-                    tt = None
-                    while tt==None:
-                        self.guiApi.sendMessage({'command':'pDialog','msg':'SN for ' + processDependency['name'],'inputHeight':30})
-                        t = self.guiApi.waitForDialogReturn()
-                        tt = re.match(processDependency['SNregex'],t[1])
-                    dependencyDict[processDependency['name']] = t[1]
-                self.configurationManager.setDependencyDict(dependencyDict)
-            
-        ###   End of automatic SN's handle   ###
         
         
         for commName, comm in self.configurationManager.configData['communicators'].items():
@@ -177,7 +155,8 @@ class Sequencer:
                 
                 if self.isRouteControllerEnable and (not self.isSkipBeginningRCcheck):
 
-                    SN = self.configurationManager.getSN()                   
+                    SN = self.configurationManager.getSN()
+                    dependencyDict = self.configurationManager.getDependencyDict()
                     if self.routeController.isOkToTest(SN,self.testSequenceID,dependencyDict)!=True:
                         self.guiApi.sendMessage({'command':'pDialog',
                                                  'msg':'This unit is not routed to this station. Or a subcomponent has not been tested'
@@ -342,8 +321,10 @@ class Sequencer:
                         print 'Data submitted to the database'
                         
                         #RouteControl
+                        SN = self.configurationManager.getSN()
+                        dependencyDict = self.configurationManager.getDependencyDict()
                         if self.isRouteControllerEnable!=False:
-                            if self.routeController.updateRouteControl_auto(SN,self.testSequenceID,self.cycleTestResult,self.dependencyDict)!=True:
+                            if self.routeController.updateRouteControl_auto(SN,self.testSequenceID,self.cycleTestResult,dependencyDict)!=True:
                                 if self.cycleTestResult:
                                     self.guiApi.sendMessage({'command':'pDialog','msg':'Route Control Exception (end check)'})
                                     self.guiApi.waitForDialogReturn()
@@ -460,3 +441,45 @@ class Sequencer:
             return False
         return True
         
+    
+    def automaticSN(self):
+        if not self.isAutomaticSNdialog: return
+        if self.isRouteControllerEnable:
+            self.automaticSN_withRouteController()
+        else:
+            self.automaticSN_noRouteController()
+
+    def automaticSN_noRouteController(self):
+        tt = None
+        while tt==None:
+            self.guiApi.sendMessage({'command':'pDialog','msg':'SN for UUT','inputHeight':30})
+            t = self.guiApi.waitForDialogReturn()
+            tt = re.match(self.uutSNregex,t[1])
+        self.configurationManager.setSN(t[1])
+      
+          
+    def automaticSN_withRouteController(self):
+        dependencyDict = {}
+            
+        uutSNregex = self.routeController.getUutSNregex(self.testSequenceID)
+        tt = None
+        while tt==None:
+            self.guiApi.sendMessage({'command':'pDialog','msg':'SN for UUT','inputHeight':30})
+            t = self.guiApi.waitForDialogReturn()
+          
+            tt = re.match(uutSNregex,t[1])
+        self.configurationManager.setSN(t[1])
+      
+        
+        if self.routeController.isStartNode(self.testSequenceID):
+            processDependencyList = self.routeController.getDependencyList(self.testSequenceID)
+            for processDependency in processDependencyList:
+                tt = None
+                while tt==None:
+                    self.guiApi.sendMessage({'command':'pDialog','msg':'SN for ' + processDependency['name'],'inputHeight':30})
+                    t = self.guiApi.waitForDialogReturn()
+                    tt = re.match(processDependency['SNregex'],t[1])
+                dependencyDict[processDependency['name']] = t[1]
+            self.configurationManager.setDependencyDict(dependencyDict)
+
+

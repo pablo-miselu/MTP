@@ -175,8 +175,7 @@ class ConfigurationManager:
         Gets the guiApi object (see :ref:`label_MtpGui`)
         """
         return self.guiApi
-   
-   
+    
     def getSN(self):
         """
         Gets the string with the serial number
@@ -205,6 +204,12 @@ class ConfigurationManager:
         | Unique string that identifies the configuration set in use.
         """
         return self.configData['testSequenceID']    
+    
+    def getUutSNregex(self):
+        """
+        Gets the string with the regex for the uut serial number
+        """
+        return self.configData['uutSNregex']
     
     
     def getTestSuiteID(self):
