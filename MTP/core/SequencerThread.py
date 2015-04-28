@@ -54,6 +54,7 @@ class SequencerThread (threading.Thread):
         
         siteID = sys.argv[1]
         configData = json.loads(pUtils.quickFileRead(testStationConfigFileFullPath))
+        configData = self.processImport(configData)
         configData ['testSequenceID'] = sys.argv[3].split('.')[0]
         
         limitDict = json.loads(pUtils.quickFileRead(limitFileFullPath))
@@ -80,3 +81,24 @@ class SequencerThread (threading.Thread):
             
         self.guiApi.sendMessage({'command':'reInitLayout'})
         
+    
+    def processImport(self,configData):
+        """
+        | Process the import section of the configData
+        """
+        srcDict = {}
+        for entry in configData['import']['config']:
+            srcDict[entry['fileID']] = json.loads(pUtils.quickFileRead(os.path.join(os.environ['MTP_TESTSTATION'],entry['filePartialPath'])))
+            
+        for entry in configData['import']['data']:
+            
+            srcPointer = srcDict[entry['fileID']]
+            for item in entry['varJsonSrcPath']:
+                srcPointer = srcPointer[item]
+            
+            dstPointer = configData
+            for item in entry['varJsonDstPath'][:-1]:
+                dstPointer = dstPointer[item]
+                
+            dstPointer[entry['varJsonDstPath'][-1]] = srcPointer
+        return configData
