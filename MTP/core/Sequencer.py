@@ -79,10 +79,8 @@ class Sequencer:
         self.wholeCycles = self.configurationManager.getWholeCycles()
         self.customResultWindow = self.configurationManager.getCustomResultWindow()
     
-        self.uutSNregex = self.configurationManager.getUutSNregex()
         self.isRouteControllerEnable = self.configurationManager.getIsRouteControlEnable()
         self.isSkipBeginningRCcheck = self.configurationManager.getIsSkipBeginningRCcheck()
-        self.isAutomaticSNdialog = self.configurationManager.getIsAutomaticSNdialog()        
         self.isDatabaseEnable = self.configurationManager.getIsDatabaseEnable()    
         
         #Init clean reusable variables from guiApi (e.g. queues)
@@ -93,9 +91,8 @@ class Sequencer:
         ###   End of init of object variables   ###
         
         
-        self.automaticSN()
-        
-        
+        if  self.configurationManager.getIsAutomaticSNdialog():
+            self.automaticSNdialog()
         
         for commName, comm in self.configurationManager.configData['communicators'].items():
             if 'isDefault' in comm and comm['isDefault']:
@@ -442,44 +439,23 @@ class Sequencer:
         return True
         
     
-    def automaticSN(self):
-        if not self.isAutomaticSNdialog: return
-        if self.isRouteControllerEnable:
-            self.automaticSN_withRouteController()
-        else:
-            self.automaticSN_noRouteController()
-
-    def automaticSN_noRouteController(self):
+    def automaticSNdialog(self):    
+        uutSNregex = self.configurationManager.getUutSNregex()
         tt = None
         while tt==None:
             self.guiApi.sendMessage({'command':'pDialog','msg':'SN for UUT','inputHeight':30})
             t = self.guiApi.waitForDialogReturn()
-            tt = re.match(self.uutSNregex,t[1])
-        self.configurationManager.setSN(t[1])
-      
-          
-    def automaticSN_withRouteController(self):
-        dependencyDict = {}
-            
-        uutSNregex = self.routeController.getUutSNregex(self.testSequenceID)
-        tt = None
-        while tt==None:
-            self.guiApi.sendMessage({'command':'pDialog','msg':'SN for UUT','inputHeight':30})
-            t = self.guiApi.waitForDialogReturn()
-          
             tt = re.match(uutSNregex,t[1])
         self.configurationManager.setSN(t[1])
       
-        
-        if self.routeController.isStartNode(self.testSequenceID):
-            processDependencyList = self.routeController.getDependencyList(self.testSequenceID)
-            for processDependency in processDependencyList:
-                tt = None
-                while tt==None:
-                    self.guiApi.sendMessage({'command':'pDialog','msg':'SN for ' + processDependency['name'],'inputHeight':30})
-                    t = self.guiApi.waitForDialogReturn()
-                    tt = re.match(processDependency['SNregex'],t[1])
-                dependencyDict[processDependency['name']] = t[1]
-            self.configurationManager.setDependencyDict(dependencyDict)
-
-
+        dependencyList = self.configurationManager.getDependencyList()
+        dependencyDict = {}
+        for dependency in dependencyList:
+            
+            tt = None
+            while tt==None:
+                self.guiApi.sendMessage({'command':'pDialog','msg':'SN for ' + dependency['name'],'inputHeight':30})
+                t = self.guiApi.waitForDialogReturn()
+                tt = re.match(dependency['regex'],t[1])
+            dependencyDict[dependency['name']] = t[1]
+        self.configurationManager.setDependencyDict(dependencyDict)

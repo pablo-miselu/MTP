@@ -211,6 +211,11 @@ class ConfigurationManager:
         """
         return self.configData['uutSNregex']
     
+    def getDependencyList(self):
+        """
+        Gets the list with the dependency entries for the test sequence
+        """
+        return self.configData['dependencyList']
     
     def getTestSuiteID(self):
         """
