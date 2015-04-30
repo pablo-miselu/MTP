@@ -215,7 +215,7 @@ class ConfigurationManager:
         """
         Gets the list with the dependency entries for the test sequence
         """
-        return self.configData['dependencyList']
+        return self.configData.get('dependencyList',[])
     
     def getTestSuiteID(self):
         """
