@@ -197,7 +197,7 @@ class GenericCommunicator(object):
                 self.guiApi.sendMessage({'command':'processEvents'})
         
     
-    def communicate(self,msg,regex,timeout):
+    def communicate(self,msg,regex,timeout,isFlush=True):
         """
         | Clears the parsing buffer.
         | Sends *msg*.
@@ -210,24 +210,27 @@ class GenericCommunicator(object):
         * msg (str): The string/message to send
         * regex (str): A regex, same syntax as the standard python *re* module uses
         * timeout (float): Timeout in seconds
-            
+        * isFlush (bool): Indicates if flush or not before communicating
+        
         Returns:
             A *re.MatchObject* instance
         """
         
-        with self.pollingThreadLock:
-            while True:  
-                data = self.driver.receive(999)
-                
-                if len(data)>0:
-                    self.updateConsoleBuffer(data)
-                    self.updateLogFileBuffer(data)
-                else:
-                    break
-            self.flushParseBuffer()
-        
-        
         for i in range (self.retries+1):
+    
+            if isFlush:
+                with self.pollingThreadLock:
+                    while True:  
+                        data = self.driver.receive(999)
+                        
+                        if len(data)>0:
+                            self.updateConsoleBuffer(data)
+                            self.updateLogFileBuffer(data)
+                        else:
+                            break
+                    self.flushParseBuffer()
+            
+        
             try:
                 self.transmit(msg)
                 return self.receive(regex,timeout)

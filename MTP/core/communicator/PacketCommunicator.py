@@ -117,20 +117,25 @@ class PacketCommunicator(GenericCommunicator):
         """
         
         timeAnchor = time.time()
-        r = re.compile(regex,re.DOTALL)
         while(time.time()-timeAnchor<timeout):
-            for i in range(len(self.packetBuffer)):
-                t = r.match(self.packetBuffer[i])    
-                if t!=None:
-                    with self.packetBufferLock:
-                        self.packetBuffer.pop(i)
-                    return t
+            t = self.getPacket(regex)
+            if t : return t
             sleep(self.readRetryInterval)
         
         raise Exception('Communicator: Did not receive expected answer within timeout. regex='+pUtils.formatHex(regex))
 
-
-    def communicate(self,msg,regex,timeout):
+    def getPacket(self,regex):
+        r = re.compile(regex,re.DOTALL)
+        with self.packetBufferLock:
+            for i in range(len(self.packetBuffer)):
+                t = r.match(self.packetBuffer[i])    
+                if t!=None:
+                    self.packetBuffer.pop(i)
+                    return t
+        return None        
+    
+                    
+    def communicate(self,msg,regex,timeout,isFlush=True):
         """
         | Clears rawBuffer and packetBuffer.
         | Sends *msg*.
@@ -143,27 +148,29 @@ class PacketCommunicator(GenericCommunicator):
         * msg (str): The string/message to send
         * regex (str): A regex, same syntax as the standard python *re* module uses
         * timeout (float): Timeout in seconds
+        * isFlush (bool): Indicates if flush or not before communicating
             
         Returns:
             A *re.MatchObject* instance
         """
     
-        with self.pollingThreadLock:
-            while True:
-                data = self.driver.receive(999)
-      
-                if len(data)>0:    
-                    displayData = pUtils.formatHex(data) + '\n'
-                    self.updateConsoleBuffer(displayData)
-                    self.updateLogFileBuffer(displayData)
-                else:
-                    break
-            
-            self.flushRawBuffer()
-            self.flushPacketBuffer()
-        
-    
         for i in range (self.retries+1):
+        
+            if isFlush:
+                with self.pollingThreadLock:
+                    while True:
+                        data = self.driver.receive(999)
+              
+                        if len(data)>0:    
+                            displayData = pUtils.formatHex(data) + '\n'
+                            self.updateConsoleBuffer(displayData)
+                            self.updateLogFileBuffer(displayData)
+                        else:
+                            break
+                    
+                    self.flushRawBuffer()
+                    self.flushPacketBuffer()
+            
             try:
                 self.transmit(msg)
                 return self.receive(regex,timeout)
