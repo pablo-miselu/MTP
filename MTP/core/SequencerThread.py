@@ -84,8 +84,12 @@ class SequencerThread (threading.Thread):
     
     def processImport(self,configData):
         """
-        | Process the import section of the configData
+        | Process the import section of the configData.
+        | If there is no import section, do nothing.
         """
+        
+        if 'import' not in configData: return configData
+        
         srcDict = {}
         for entry in configData['import']['config']:
             srcDict[entry['fileID']] = json.loads(pUtils.quickFileRead(os.path.join(os.environ['MTP_TESTSTATION'],entry['filePartialPath'])))
