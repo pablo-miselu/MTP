@@ -196,6 +196,7 @@ class Sequencer:
                         try:
                             exec('measurementDict = self.testSuite.'+test['testName']+'()')
                         except Exception,e:
+                            self.logAll('EXCEPTION:'+str(e),0)
                             measurementDict = {'EXCEPTION':self.sanitizeString(str(e))[0]}
                         
                             
