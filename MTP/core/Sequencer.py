@@ -240,15 +240,9 @@ class Sequencer:
                      '\n*******************************'
                     )
                 
-                if 'default' in self.commDict:
-                    self.commDict['default'].log(s,1)
-                else:
-                    
-                    ss = '###   The following messages will NOT be logged   ###\n'
-                    ss+= s
-                    ss+= '\n#####################################################\n'
-                    print ss
-                    pUtils.quickFileWrite(self.crashLogFullPath,ss,'at')
+                self.logAll(s,1)    
+                print ss
+                pUtils.quickFileWrite(self.crashLogFullPath,ss,'at')
                 
                 
             finally:
