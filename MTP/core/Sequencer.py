@@ -196,7 +196,7 @@ class Sequencer:
                         try:
                             exec('measurementDict = self.testSuite.'+test['testName']+'()')
                         except Exception,e:
-                            measurementDict = {'EXCEPTION':str(e)}
+                            measurementDict = {'EXCEPTION':self.sanitizeString(str(e))[0]}
                         
                             
                         testEndTimestamp = pUtils.getTimeStamp()
@@ -459,3 +459,21 @@ class Sequencer:
                 tt = re.match(dependency['regex'],t[1])
             dependencyDict[dependency['name']] = t[1]
         self.configurationManager.setDependencyDict(dependencyDict)
+
+    def sanitizeString(self,s):
+        alphabet_uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+        alpahbet_lowercase = alphabet_uppercase.lower()
+        numbers = '0123456789'
+        space = ' '
+        replaceStr = '.'
+        validChars = alpahbet_lowercase + alphabet_uppercase + numbers + space
+        
+        retString = ''
+        counter = 0
+        for item in s:
+            if item in validChars:
+                retString += item
+            else:
+                retString += replaceStr
+                counter += 1
+        return retString, counter
