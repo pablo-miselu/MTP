@@ -180,7 +180,7 @@ class PacketCommunicator(GenericCommunicator):
                 return t
             except Exception,e:
                 from MTP.core.Sequencer import sanitizeString
-                packetRetryInfoEntry = {'i':i,'msg':msg,'regex':regex,'timeout':timeout,'exceptionStr':sanitizeString(str(e))}
+                packetRetryInfoEntry = {'i':i,'msg':pUtils.formatHex(msg),'regex':pUtils.formatHex(regex),'timeout':timeout,'exceptionStr':sanitizeString(str(e))}
                 if 'packetRetryInfoEntryList' not in self.configurationManager.selfStats: self.configurationManager.selfStats['packetRetryInfoEntryList']=[]
                 self.configurationManager.selfStats['packetRetryInfoEntryList'].append(packetRetryInfoEntry)
         
