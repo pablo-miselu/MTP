@@ -268,7 +268,13 @@ class Sequencer:
                     self.endTimestamp = pUtils.getTimeStamp()
                     
                     selfStatsFullPath = os.path.join(self.testRunFolder,'selfStats.json')
-                    pUtils.quickFileWrite(selfStatsFullPath,json.dumps(self.configurationManager.selfStats))
+                    
+                    try:
+                        selfStats_json = json.dumps(self.configurationManager.selfStats)
+                    except Exception, e:
+                        selfStats_json = str(e) +'<...>'+ str(self.configurationManager.selfStats)
+                    
+                    pUtils.quickFileWrite(selfStatsFullPath,selfStats_json)
                     self.filePointerDictionary['selfStats'] = selfStatsFullPath
                     
                     SN = self.configurationManager.getSN()
