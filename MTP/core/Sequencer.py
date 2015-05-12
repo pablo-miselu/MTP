@@ -30,6 +30,26 @@ import re
 
 from time import sleep
 
+
+def sanitizeString(s):
+    alphabet_uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    alpahbet_lowercase = alphabet_uppercase.lower()
+    numbers = '0123456789'
+    space = ' '
+    replaceStr = '.'
+    validChars = alpahbet_lowercase + alphabet_uppercase + numbers + space
+    
+    retString = ''
+    counter = 0
+    for item in s:
+        if item in validChars:
+            retString += item
+        else:
+            retString += replaceStr
+            counter += 1
+    return retString, counter
+
+
 class Sequencer:
     """
     | It handles the sequencing of the tests, it is virtually the top level of a test run execution.
@@ -197,7 +217,7 @@ class Sequencer:
                             exec('measurementDict = self.testSuite.'+test['testName']+'()')
                         except Exception,e:
                             self.logAll('EXCEPTION:'+str(e),0)
-                            measurementDict = {'EXCEPTION':self.sanitizeString(str(e))[0]}
+                            measurementDict = {'EXCEPTION':sanitizeString(str(e))[0]}
                         
                             
                         testEndTimestamp = pUtils.getTimeStamp()
@@ -466,20 +486,3 @@ class Sequencer:
             dependencyDict[dependency['name']] = t[1]
         self.configurationManager.setDependencyDict(dependencyDict)
 
-    def sanitizeString(self,s):
-        alphabet_uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-        alpahbet_lowercase = alphabet_uppercase.lower()
-        numbers = '0123456789'
-        space = ' '
-        replaceStr = '.'
-        validChars = alpahbet_lowercase + alphabet_uppercase + numbers + space
-        
-        retString = ''
-        counter = 0
-        for item in s:
-            if item in validChars:
-                retString += item
-            else:
-                retString += replaceStr
-                counter += 1
-        return retString, counter
