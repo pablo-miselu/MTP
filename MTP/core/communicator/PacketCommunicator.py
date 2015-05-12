@@ -173,10 +173,18 @@ class PacketCommunicator(GenericCommunicator):
             
             try:
                 self.transmit(msg)
-                return self.receive(regex,timeout)
+                t = self.receive(regex,timeout)
+                if i>0:
+                    if 'packetRetryCounSuccesstList' not in self.configurationManager.selfStats: self.configurationManager.selfStats['packetRetryCounSuccesstList']=[]
+                    self.configurationManager.selfStats['packetRetryCounSuccesstList'].append(i)
+                return t
             except Exception,e:
-                pass        
-        raise Exception (str(e))
+                packetRetryInfoEntry = {'i':i,'msg':msg,'regex':regex,'timeout':timeout,'exceptionStr':str(e)}
+                if 'packetRetryInfoEntryList' not in self.configurationManager.selfStats: self.configurationManager.selfStats['packetRetryInfoEntryList']=[]
+                self.configurationManager.selfStats['packetRetryInfoEntryList'].append(packetRetryInfoEntry)
+        
+        self.configurationManager.selfStats['retryCountFail'] = i
+        raise Exception (str(e)+' RetryCountFail:'+str(i))
     
 
     def updateRawBuffer(self,data=None,bytesToRemove=None):

@@ -247,7 +247,8 @@ class Sequencer:
                 
             finally:
                 
-                
+                self.stringDictionary  = {}
+                self.numericDictionary  = {}
                 self.filePointerDictionary = {}
                 
                 ###  End all threads from Communicator instances   ###
@@ -266,12 +267,16 @@ class Sequencer:
                 try:
                     self.endTimestamp = pUtils.getTimeStamp()
                     
+                    selfStatsFullPath = os.path.join(self.testRunFolder,'selfStats.json')
+                    pUtils.quickFileWrite(selfStatsFullPath,json.dumps(self.configurationManager.selfStats))
+                    self.filePointerDictionary['selfStats'] = selfStatsFullPath
+                    
                     SN = self.configurationManager.getSN()
                     self.testRunSummary = [SN,self.siteID,self.stationID,self.testSequenceID,self.startTimestamp,self.endTimestamp,self.lastTestEntered,self.cycleTestResult]
                     self.testMeasurementList = self.limitManager.testMeasurementList
                     if self.testSuite:
-                        self.stringDictionary = self.testSuite.stringDictionary
-                        self.numericDictionary = self.testSuite.numericDictionary
+                        self.stringDictionary.update(self.testSuite.stringDictionary)
+                        self.numericDictionary.update(self.testSuite.numericDictionary)
                         self.filePointerDictionary.update(self.testSuite.filePointerDictionary)
                     else:
                         self.stringDictionary = {}

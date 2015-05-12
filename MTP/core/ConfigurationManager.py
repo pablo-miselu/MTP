@@ -58,6 +58,8 @@ class ConfigurationManager:
         self.commDict = {}
         self.testRunFolderFullPath = ''
         self.SN = 'placeholder_SN'
+        
+        self.selfStats = {}
 
 
     def initCommunicators(self):
