@@ -175,8 +175,8 @@ class PacketCommunicator(GenericCommunicator):
                 self.transmit(msg)
                 t = self.receive(regex,timeout)
                 if i>0:
-                    if 'packetRetryCounSuccesstList' not in self.configurationManager.selfStats: self.configurationManager.selfStats['packetRetryCounSuccesstList']=[]
-                    self.configurationManager.selfStats['packetRetryCounSuccesstList'].append(i)
+                    if 'packetRetryCountSuccessList' not in self.configurationManager.selfStats: self.configurationManager.selfStats['packetRetryCountSuccessList']=[]
+                    self.configurationManager.selfStats['packetRetryCountSuccessList'].append(i)
                 return t
             except Exception,e:
                 from MTP.core.Sequencer import sanitizeString
@@ -184,7 +184,7 @@ class PacketCommunicator(GenericCommunicator):
                 if 'packetRetryInfoEntryList' not in self.configurationManager.selfStats: self.configurationManager.selfStats['packetRetryInfoEntryList']=[]
                 self.configurationManager.selfStats['packetRetryInfoEntryList'].append(packetRetryInfoEntry)
         
-        self.configurationManager.selfStats['retryCountFail'] = i
+        self.configurationManager.selfStats['packetRetryCountFail'] = i
         raise Exception (str(e)+' RetryCountFail:'+str(i))
     
 
