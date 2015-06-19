@@ -216,8 +216,9 @@ class Sequencer:
                         try:
                             exec('measurementDict = self.testSuite.'+test['testName']+'()')
                         except Exception,e:
-                            self.logAll('EXCEPTION:'+str(e),0)
-                            measurementDict = {'EXCEPTION':sanitizeString(str(e))[0]}
+                            exceptionMsg =  type(e).__name__+':'+ str(e)
+                            self.logAll('EXCEPTION:'+exceptionMsg,0)
+                            measurementDict = {'EXCEPTION':sanitizeString(exceptionMsg)[0]}
                         
                             
                         testEndTimestamp = pUtils.getTimeStamp()
