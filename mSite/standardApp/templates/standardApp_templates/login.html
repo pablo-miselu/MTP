@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>Login</title>
+
+
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+		
+		
+		<!-- Optional theme -->
+		<!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">-->
+		
+		<!-- Latest compiled and minified JavaScript -->
+		<!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>-->
+        
+
+        <style type="text/css">
+    
+            body
+            {
+                background-color: #F1F1F1;
+                padding-top: 40px; 
+            }
+            
+            .container
+            {
+                width: 300px;
+            }
+            .login-form
+            {
+                margin-left: 65px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
+            <div class="content">
+                <div class="row">
+                    <div class="login-form">
+                        <h2>Login</h2>
+						         
+			<form action="{% url 'standardApp.views_login.loginView' %}" method="post" enctype="multipart/form-data">
+			    <input type='hidden' name='next' value='{{next}}' />
+			    {% csrf_token %}	     
+				
+				{{ form.username }}<br>
+				{{ form.password }}<br>
+				<button class="btn btn-primary" type="submit">Sign in</button>
+            
+			</form>
+			{{msg}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

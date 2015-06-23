@@ -1,0 +1,220 @@
+<!--  
+Copyright 2013 Pablo De La Garza, Miselu Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+
+
+<html>
+    
+    {% include "head_base.html" %}
+
+            
+    <body align="center" style="background: black;">
+
+<script>
+     function reqFieldCheck() {
+                if (document.forms["parameters"]["startRange"].value==""){alert("Please select a start date");return false;}
+                if (document.forms["parameters"]["endRange"].value==""){alert("Please select a end date");return false;}
+                return true;
+            }
+</script>
+
+        
+        <h1 style="font: bold 50px times new roman, sans-serif; color:#FFFFFF;">Failure Trend</h1>
+        <h3 style="font: bold 30px times new roman, sans-serif; color:#FFFFFF;">{{testSequenceID}} {{testName}}</h3>
+        
+        <div align=center style="font:30px times new roman, sans-serif; color:#FFFFFF;">
+        <form name="parameters" action="{% url 'DataMining.views.failureTrendView' %}" method="get" onsubmit="return reqFieldCheck()">
+            
+            <select style="text-align:right;font:20px times new roman, sans-serif; color:#000000;line-height:20px;width:auto" name="mtnID">
+            {% for item in comboBoxData_mtnID %}
+            
+            <option {% if item.value == mtnID %}selected{% endif %}  value={{ item.value }}>{{ item.text }}</option>
+            {% endfor %}
+            </select>
+            
+            <select style="text-align:right;font:20px times new roman, sans-serif; color:#000000;width:auto" name="interval">
+            {% for item in comboBoxData_interval %}
+            
+            <option {% if item.value == interval %}selected{% endif %}  value={{ item.value }}>{{ item.text }}</option>
+            {% endfor %}
+            </select>
+            
+            <BR><BR>
+            Start <input style="font:20px times new roman, sans-serif; color:#000000;line-height:20px;width:180px" name="startRange" value="{{startRange}}" type="date">
+            End   <input style="font:20px times new roman, sans-serif; color:#000000;line-height:20px;width:180px" name="endRange" value="{{endRange}}" type="date">
+            <input style="font:20px times new roman, sans-serif; color:#000000;height: 35px" type="submit" value="GO">
+                
+            
+            
+            
+            
+            
+            <input name="displayTimeZone" value="{{displayTimeZone}}" type="hidden">
+            <input name="testSequenceID" value="{{testSequenceID}}" type="hidden">
+            <input name="testName" value="{{testName}}" type="hidden">
+                
+        </form>
+        </div>
+        <BR>
+        <script type="text/javascript">
+           
+            
+            
+            function drawBarChart(svgContainer,data) {
+                
+                d4 = data.d4
+                
+                barSlotWidth = data.barWidth+data.barGap
+              
+                
+                
+                
+                barArea     = { x:d4.left,
+                                y:d4.top,
+                                width:data.barChartWidth-d4.left-d4.right,
+                                height:data.barChartHeight-d4.top-d4.bottom}
+                topArea    = {  x:d4.left,
+                                y:0,
+                                width:barArea.width,
+                                height:d4.top}
+                bottomArea = {  x:d4.left,
+                                y:d4.top+barArea.height,
+                                width:barArea.width,
+                                height:d4.bottom}
+                leftArea   = {  x:0,
+                                y:0,
+                                width:d4.left,
+                                height:data.barChartHeight}
+                rightArea  = {  x:d4.left+barArea.Width,
+                                y:0,
+                                width:d4.right,
+                                height:data.barChartHeight}
+                
+                
+                svgBarChart = svgContainer.append("svg") 
+                            .attr("width",data.barChartWidth)
+                            .attr("height",data.barChartHeight)  
+                
+                svgBarArea = svgBarChart.append("svg")
+                            .attr("x",barArea.x)
+                            .attr("y",barArea.y)
+                            .attr("width",barArea.width)
+                            .attr("height",barArea.height)
+              
+                svgLeftArea = svgBarChart.append("svg")
+                            .attr("x",leftArea.x)
+                            .attr("y",leftArea.y)
+                            .attr("width",leftArea.width)
+                            .attr("height",leftArea.height)
+              
+              
+                svgBottomArea = svgBarChart.append("svg")
+                            .attr("x",bottomArea.x)
+                            .attr("y",bottomArea.y)
+                            .attr("width",bottomArea.width)
+                            .attr("height",bottomArea.height)
+              
+              
+                
+                
+                
+                
+                function barX(d,i)
+                {return barSlotWidth*i}
+                
+                //function labelClamped(label) {
+                //    return d.label.substr(0,Math.floor((barSlotWidth-20)/10))
+                //}
+                
+                function valueToPixelLength(value) {
+                    return value/data.barMaxValue*barArea.height
+                }
+                
+                function valueToY(value) {
+                    return barArea.height-valueToPixelLength(value)
+                }
+                
+                
+                
+                   
+                //Bars
+                svgBarArea
+                    .selectAll()
+                    .data(data.barInstanceData)
+                    .enter()
+                    .append("rect")
+                    .attr("x",barX)
+                    .attr("y",function(d,i) {return valueToY(d.value)})
+                    .attr("width", data.barWidth+"px")
+                    .attr("height", function(d,i){return valueToPixelLength(d.value)})
+                    .attr("fill",function(d,i){return d.barColor})
+                
+                ////Labels
+                svgBottomArea
+                .selectAll()
+                .data(data.barInstanceData)
+                .enter()
+                .append("text")
+                .text(function (d,i) {return d.label})
+                .attr("x",function(d,i){return barX(d,i)+20})     //center attrib on svg text??
+                .attr("y",function(d,i){return 20})  //MAke it autoadjust to font size?
+                .attr("font-family","sans-serif")
+                .attr("font-size","20px")
+                .attr("fill","white");
+                
+                //Axis
+                
+                yAxisScale = d3.scale.linear()
+                                .domain([0,data.barMaxValue])
+                                .range([barArea.height,0])
+                       
+                yAxis = d3.svg.axis()
+                            .scale(yAxisScale)
+                            .orient("left")
+                            .ticks(10)
+                            //.tickFormat(d3.format(".0"));
+    
+                
+                svgLeftArea.append("g")
+                .attr("transform", "translate(" + (40) + ","+(d4.top+0)+")")
+                    .attr("class", "axis")
+                    
+                    .call(yAxis);
+            
+                
+            
+            }
+           
+           
+            ///   Entry point   ///
+            
+            failureData = JSON.parse('{{failureData_json|safe}}')
+            totalData = JSON.parse('{{totalData_json|safe}}')
+            
+            drawBarChart(d3.select("body"),failureData);
+            drawBarChart(d3.select("body"),totalData);
+            
+           
+        </script>
+        
+        <script>
+            $(document).ready(function () {
+          
+                
+            });
+        </script>
+        
+    </body>  
+</html>

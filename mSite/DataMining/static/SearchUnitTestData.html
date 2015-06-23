@@ -1,0 +1,41 @@
+<HTML>
+    <HEAD>
+        <TITLE>Search Unit Test Data</TITLE>
+        
+        <STYLE>
+            
+        
+        .header{
+                font-family: sans-serif;
+                font-size: 20px;
+                fill: #FFFFFF;  
+                text-anchor: middle;
+            }
+            
+        
+        </STYLE>
+        
+    </HEAD>
+    <BODY align="center" style="background: #FFFFFF">
+         
+         
+           
+        <!--<div class="header">SN</div>    
+        
+        <input type="text"> <BR>
+        <input type="button" value="GO">
+        -->
+        
+       <form action="{% url 'DataMining.views.testRunView' %}" method="get">
+                         SN<BR>  
+       <input type="text" name="SN"><br>
+       <select name="mtnID">
+        {% for item in comboBoxData %}
+        <option value={{ item.value }}>{{ item.text }}</option>
+       {% endfor %}
+       </select>
+       <input type="submit" value="Submit">
+       </form>
+            
+    </BODY>
+</HTML>
